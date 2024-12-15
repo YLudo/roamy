@@ -8,9 +8,9 @@ const DashboardLayout = ({
 	return (
 		<>
 			<Navbar />
-			<section className="container mx-auto mt-6">
+			<main className="container mx-auto mt-2	 p-4">
 				{children}
-			</section>
+			</main>
 		</>
 	);
 }
