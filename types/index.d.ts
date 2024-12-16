@@ -6,7 +6,7 @@ interface Menu {
 };
 
 interface Travel {
-    id: number;
+    id: string;
     name: string;
     startDate: string;
     endDate: string;
