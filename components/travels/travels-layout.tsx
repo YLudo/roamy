@@ -33,17 +33,7 @@ const TravelsLayout = ({ travels }: { travels: Travel[] }) => {
             {travels.length > 0 ? (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 mt-4 gap-4">
                     {travels.map((travel: Travel) => (
-                        <TravelCard
-                            key={travel.id}
-                            id={travel.id}
-                            name={travel.name}
-                            startDate={travel.startDate}
-                            endDate={travel.endDate}
-                            destination={travel.destination}
-                            image={travel.image}
-                            status={travel.status}
-                            participants={travel.participants}
-                        />
+                        <TravelCard travel={travel} />
                     ))}
                 </div>
             ) : (
