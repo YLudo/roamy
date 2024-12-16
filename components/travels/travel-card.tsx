@@ -4,18 +4,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 
-interface TravelCardProps {
-    id: number;
-    name: string;
-    startDate: string;
-    endDate: string;
-    destination: string;
-    image: string;
-    status: string;
-    participants: number;
-}
-
-const TravelCard = ({ name, startDate, endDate, destination, image, status, participants }: TravelCardProps) => {
+const TravelCard = ({ name, startDate, endDate, destination, image, status, participants }: Travel) => {
     return (
         <Card>
             <CardHeader>

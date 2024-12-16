@@ -2,7 +2,12 @@ import TravelsLayout from "@/components/travels/travels-layout";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import Link from "next/link";
 
-const TravelsPage = () => {
+const TravelsPage = async () => {
+    const res = await fetch(`${process.env.API_URL}/travels`, {
+        cache: "no-store",
+    });
+    const travels = await res.json();
+
     return (
         <>
             <Breadcrumb>
@@ -17,7 +22,7 @@ const TravelsPage = () => {
                         <BreadcrumbPage>Mes voyages</BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>
-                <TravelsLayout />
+                <TravelsLayout travels={travels} />
             </Breadcrumb>
         </>
     );
