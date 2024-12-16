@@ -1,10 +1,15 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-const TravelCard = ({ name, startDate, endDate, destination, image, status, participants }: Travel) => {
+const TravelCard = ({ id, name, startDate, endDate, destination, image, status, participants }: Travel) => {
+    const router = useRouter();
+
     return (
         <Card>
             <CardHeader>
@@ -26,7 +31,7 @@ const TravelCard = ({ name, startDate, endDate, destination, image, status, part
                         <p className="text-sm">{participants} participants</p>
                     </div>
                 </div>
-                <Button className="w-full"><ExternalLink /> Voir le voyage</Button>
+                <Button className="w-full" onClick={() => router.push(`/travels/${id}`)}><ExternalLink /> Voir le voyage</Button>
             </CardContent>
         </Card>
     );
