@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import TravelCard from "./travel-card";
+import TravelsFilters from "./travels-filters";
 
 const TravelsLayout = ({ travels }: { travels: Travel[] }) => {
     return (
@@ -8,6 +9,7 @@ const TravelsLayout = ({ travels }: { travels: Travel[] }) => {
                 <h1 className="font-bold text-xl">Mes voyages</h1>
                 <Button>Créer un voyage</Button>
             </div>
+            <TravelsFilters />
             {travels.length > 0 ? (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 mt-4 gap-4">
                     {travels.map((travel: Travel) => (
