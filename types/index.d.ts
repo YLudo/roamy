@@ -1,4 +1,4 @@
-declare type Menu = {
+interface Menu {
     href: string;
     label: string;
     icon: Icon;
