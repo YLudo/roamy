@@ -3,7 +3,10 @@
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import TravelCard from "./travel-card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TravelActivites from "./travel-activities";
+import TravelBudget from "./travel-budget";
+import TravelDocuments from "./travel-documents";
 
 const TravelShowLayout = ({ travel }: { travel: Travel }) => {
     const router = useRouter();
@@ -17,12 +20,21 @@ const TravelShowLayout = ({ travel }: { travel: Travel }) => {
             <div className="grid lg:grid-cols-3 mt-4 gap-4">
                 <TravelCard travel={travel} isShowPage />
                 <div className="lg:col-span-2">
-                    <Tabs defaultValue="itinerary" className="w-full">
+                    <Tabs defaultValue="activities" className="w-full">
                         <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="itinerary">Itinéraire</TabsTrigger>
+                            <TabsTrigger value="activities">Activités</TabsTrigger>
                             <TabsTrigger value="budget">Budget</TabsTrigger>
                             <TabsTrigger value="documents">Documents</TabsTrigger>
                         </TabsList>
+                        <TabsContent value="activities">
+                            <TravelActivites travel={travel} />
+                        </TabsContent>
+                        <TabsContent value="budget">
+                            <TravelBudget travel={travel} />
+                        </TabsContent>
+                        <TabsContent value="documents">
+                            <TravelDocuments travel={travel} />
+                        </TabsContent>
                     </Tabs>
                 </div>
             </div>
