@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const RegisterSchema = z.object({
-    username: z
+    name: z
         .string()
         .min(3, {
             message: "Votre nom d'utilisateur doit faire 3 caractères minimum.",

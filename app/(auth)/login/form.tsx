@@ -6,8 +6,12 @@ import { Input } from "@/components/ui/input";
 import { LoginSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { signIn } from "next-auth/react";
+import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 const LoginForm = () => {
     const form = useForm<z.infer<typeof LoginSchema>>({
@@ -18,8 +22,32 @@ const LoginForm = () => {
         },
     });
 
+    const [isPending, startTransition] = useTransition();
+    const router = useRouter();
+
     const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-        console.log(values);
+        startTransition(async () => {
+            const result = await signIn("credentials", {
+                email: values.email,
+                password: values.password,
+                redirect: false
+            });
+
+            if (result?.error) {
+                toast({
+                    variant: "destructive",
+                    title: "Connexion échouée !",
+                    description: result.error,
+                });
+            } else {
+                toast({
+                    title: "Connexion réussie !",
+                    description: "Vous vous êtes connecté avec succès.",
+                });
+                form.reset();
+                router.push("/");
+            }
+        })
     }
 
     return (

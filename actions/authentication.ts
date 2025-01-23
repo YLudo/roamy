@@ -13,7 +13,7 @@ export const register = async (values: any) => {
         };
     }
 
-    const { username, email, password } = validatedFields.data;
+    const { name, email, password } = validatedFields.data;
 
     const existingEmail = await prisma.user.findUnique({
         where: { email },
@@ -25,11 +25,11 @@ export const register = async (values: any) => {
         };
     }
 
-    const existingUsername = await prisma.user.findUnique({
-        where: { username },
+    const existingName = await prisma.user.findUnique({
+        where: { name },
     });
 
-    if (existingUsername) {
+    if (existingName) {
         return {
             error: "Ce nom d'utilisateur est déjà pris. Veuillez en choisir un autre.",
         };
@@ -39,7 +39,7 @@ export const register = async (values: any) => {
 
     await prisma.user.create({
         data: {
-            username,
+            name,
             email,
             password: hashedPassword,
         },
