@@ -1,20 +1,21 @@
 "use client";
 
+import { register } from "@/actions/authentication";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 import { RegisterSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const RegisterForm = () => {
-    const FormSchema = RegisterSchema();
-    type FormData = z.infer<typeof FormSchema>;
-
-    const form = useForm({
-        resolver: zodResolver(FormSchema),
+    const form = useForm<z.infer<typeof RegisterSchema>>({
+        resolver: zodResolver(RegisterSchema),
         defaultValues: {
             username: "",
             email: "",
@@ -22,8 +23,28 @@ const RegisterForm = () => {
         },
     });
 
-    const onSubmit = (data: FormData) => {
-        console.log(data);
+    const [isPending, startTransition] = useTransition();
+    const router = useRouter();
+    
+    const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
+        startTransition(async () => {
+            const result = await register(values);
+
+            if (result.error) {
+                toast({
+                    variant: "destructive",
+                    title: "Inscription échouée !",
+                    description: result.error,
+                });
+            } else if (result.success) {
+                toast({
+                    title: "Inscription réussie !",
+                    description: result.success,
+                });
+                form.reset();
+                router.push("/login");
+            }
+        })
     }
 
     return (

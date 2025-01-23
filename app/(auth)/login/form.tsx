@@ -10,19 +10,16 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const LoginForm = () => {
-    const FormSchema = LoginSchema();
-    type FormData = z.infer<typeof FormSchema>;
-
-    const form = useForm({
-        resolver: zodResolver(FormSchema),
+    const form = useForm<z.infer<typeof LoginSchema>>({
+        resolver: zodResolver(LoginSchema),
         defaultValues: {
             email: "",
             password: "",
         },
     });
 
-    const onSubmit = (data: FormData) => {
-        console.log(data);
+    const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+        console.log(values);
     }
 
     return (
