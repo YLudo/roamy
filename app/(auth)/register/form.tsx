@@ -89,7 +89,7 @@ const RegisterForm = () => {
                         </FormItem>
                     )}
                 />
-                <Button type="submit" className="w-full">S'inscrire</Button>
+                <Button disabled={isPending} type="submit" className="w-full">S'inscrire</Button>
                 <p className="text-sm text-center">Vous avez déjà un compte ? <Link href="/login" className="text-primary">Connectez-vous</Link></p>
             </form>
         </Form>

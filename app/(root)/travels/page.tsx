@@ -1,3 +1,4 @@
+import TravelsLayout from "@/components/application/travels/list/travels-layout";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import Link from "next/link"
 
@@ -17,6 +18,7 @@ const TravelsPage = () => {
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
+            <TravelsLayout />
         </>
     );
 }

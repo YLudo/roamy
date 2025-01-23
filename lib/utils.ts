@@ -22,3 +22,21 @@ export function getMenuList(pathname: string): IMenu[] {
 		},
 	]
 }
+
+export const getTravelStatus = (startDate: string, endDate: string): { statusLabel: string; statusColor: "outline" | "secondary" | "default" | "destructive" } => {
+	const now = Date.now();
+	const start = new Date(startDate).getTime();
+	const end = new Date(endDate).getTime();
+
+	if (!start || !end) {
+		return { statusLabel: "Non planifié", statusColor: "outline" };
+	}
+
+	if (now < start) {
+		return { statusLabel: "Planifié", statusColor: "secondary" };
+	} else if (now >= start && now <= end) {
+		return { statusLabel: "En cours", statusColor: "default" };
+	}
+	
+	return { statusLabel: "Terminé", statusColor: "destructive" };
+}

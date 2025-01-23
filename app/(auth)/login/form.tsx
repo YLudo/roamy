@@ -79,7 +79,7 @@ const LoginForm = () => {
                         </FormItem>
                     )}
                 />
-                <Button type="submit" className="w-full">Se connecter</Button>
+                <Button disabled={isPending} type="submit" className="w-full">Se connecter</Button>
                 <p className="text-sm text-center">Vous n'avez pas de compte ? <Link href="/register" className="text-primary">Inscrivez-vous</Link></p>
             </form>
         </Form>
