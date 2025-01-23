@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-export const RegisterSchema = () => z.object({
-    username: z
+export const RegisterSchema = z.object({
+    name: z
         .string()
         .min(3, {
             message: "Votre nom d'utilisateur doit faire 3 caractères minimum.",
@@ -21,7 +21,7 @@ export const RegisterSchema = () => z.object({
         }),
 });
 
-export const LoginSchema = () => z.object({
+export const LoginSchema = z.object({
     email: z
         .string()
         .email({

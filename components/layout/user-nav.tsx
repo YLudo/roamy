@@ -4,8 +4,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
 
 const UserNav = () => {
+    const { data: session } = useSession();
+
+    const handleSignOut = async () => {
+        await signOut({
+            callbackUrl: "/login",
+            redirect: true,
+        });
+    };
+
     return (
         <DropdownMenu>
             <TooltipProvider disableHoverableContent>
@@ -18,7 +28,7 @@ const UserNav = () => {
                             >
                                 <Avatar className="h-8 w-8">
                                     <AvatarImage src="#" alt="Avatar" />
-                                    <AvatarFallback className="bg-transparent">JD</AvatarFallback>
+                                    <AvatarFallback className="bg-transparent">{session?.user.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
                             </Button>
                         </DropdownMenuTrigger>
@@ -29,9 +39,9 @@ const UserNav = () => {
             <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">John Doe</p>
+                        <p className="text-sm font-medium leading-none">{session?.user.name}</p>
                         <p className="text-xs leading-none text-muted-foreground">
-                            john.doe@company.com
+                            {session?.user.email}
                         </p>
                     </div>
                 </DropdownMenuLabel>
@@ -45,7 +55,7 @@ const UserNav = () => {
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="hover:cursor-pointer">
+                <DropdownMenuItem className="hover:cursor-pointer" onClick={handleSignOut}>
                     <LogOut className="w-4 h-4 mr-3 text-muted-foreground" />
                     Se déconnecter
                 </DropdownMenuItem>
