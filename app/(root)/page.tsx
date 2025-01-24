@@ -1,10 +1,14 @@
-import Navbar from "@/components/layout/navbar";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 
 const DashboardPage = () => {
     return (
-        <>
-            <Navbar />
-        </>
+        <Breadcrumb>
+            <BreadcrumbList>
+                <BreadcrumbItem>
+                    <BreadcrumbPage>Tableau de bord</BreadcrumbPage>
+                </BreadcrumbItem>
+            </BreadcrumbList>
+        </Breadcrumb>
     );
 }
 
