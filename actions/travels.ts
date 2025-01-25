@@ -3,9 +3,10 @@
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { pusherServer } from "@/lib/pusher";
+import { TravelSchema } from "@/schemas";
 import { getServerSession } from "next-auth";
 
-export async function getTravels() {
+export const getTravels = async () => {
     try {
         const session = await getServerSession(authOptions);
 
@@ -29,7 +30,7 @@ export async function getTravels() {
     }
 };
 
-export async function filterTravels(title: string, status: string, order: "asc" | "desc") {
+export const filterTravels = async (title: string, status: string, order: "asc" | "desc") => {
     try {
         const session = await getServerSession(authOptions);
 
@@ -89,3 +90,44 @@ export async function filterTravels(title: string, status: string, order: "asc" 
         };
     }
 }
+
+export const addTravel = async (values: any) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const validatedFields = TravelSchema.safeParse(values);
+    
+        if (!validatedFields.success) {
+            return {
+                error: "Les informations fournies sont invalides. Veuillez vérifier vos saisies.",
+            };
+        }
+        
+        const { title, dateRange } = validatedFields.data;
+
+        console.log(dateRange);
+
+        const newTravel = await prisma.travel.create({
+            data: {
+                title,
+                startDate: dateRange.from ? dateRange.from.toISOString() : null,
+                endDate: dateRange.to ? dateRange.to.toISOString() : null,
+                userId: session.user.id,
+            },
+        });
+
+        return {
+            data: newTravel,
+        };
+    } catch (error) {
+        return {
+            error: "Impossible d'ajouter votre voyage. Veuillez réessayer plus tard.",
+        };
+    }
+};
