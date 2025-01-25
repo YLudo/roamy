@@ -1,26 +1,25 @@
-import { filterTravels } from "@/actions/travels";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useEffect, useState, useTransition } from "react";
+import { ChangeEvent, Dispatch, SetStateAction } from "react";
 
-const DEBOUNCE_DELAY = 500;
+interface TravelsFiltersProps {
+    filters: TravelFilters;
+    setFilters: Dispatch<SetStateAction<TravelFilters>>;
+}
 
-const TravelsFilters = () => {
-    const [title, setTitle] = useState<string>("");
-    const [status, setStatus] = useState<string>("all");
-    const [order, setOrder] = useState<string>("asc");
-    const [, startTransition] = useTransition();
+const TravelsFilters = ({ filters, setFilters }: TravelsFiltersProps) => {
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setFilters((prev) => ({ ...prev, title: e.target.value }));
+    };
 
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            startTransition(async () => {
-                await filterTravels(title, status, order);
-            });
-        }, DEBOUNCE_DELAY);
+    const handleStatusChange = (val: TravelFilters["status"]) => {
+        setFilters((prev) => ({ ...prev, status: val }));
+    };
 
-        return () => clearTimeout(timeoutId);
-    }, [title, status, order]);
+    const handleOrderChange = (val: TravelFilters["order"]) => {
+        setFilters((prev) => ({ ...prev, order: val}));
+    };
 
     return (
         <div className="flex flex-col sm:flex-row mt-4 gap-4">
@@ -29,15 +28,15 @@ const TravelsFilters = () => {
                 <Input
                     id="destination"
                     placeholder="Rechercher un voyage..."
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    value={filters.title}
+                    onChange={handleInputChange}
                 />
             </div>
             <div className="flex-1">
                 <Label htmlFor="status" className="sr-only">Filtrer par status</Label>
                 <Select
-                    value={status}
-                    onValueChange={(val) => setStatus(val)}
+                    value={filters.status}
+                    onValueChange={handleStatusChange}
                 >
                     <SelectTrigger id="status">
                         <SelectValue placeholder="Filtrer par statut" />
@@ -53,7 +52,7 @@ const TravelsFilters = () => {
             </div>
             <div className="flex-1">
                 <Label htmlFor="order" className="sr-only">Ordonner par date</Label>
-                <Select value={order} onValueChange={(val) => setOrder(val)}>
+                <Select value={filters.order} onValueChange={handleOrderChange}>
                     <SelectTrigger id="order">
                         <SelectValue placeholder="Ordonner par date" />
                     </SelectTrigger>
