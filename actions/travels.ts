@@ -148,6 +148,67 @@ export const getTravel = async (travelId: string) => {
     }
 }
 
+export const updateTravel = async (travelId: string, values: any) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const validatedFields = TravelSchema.safeParse(values);
+    
+        if (!validatedFields.success) {
+            return {
+                error: "Les informations fournies sont invalides. Veuillez vérifier vos saisies.",
+            };
+        }
+
+        const { title, dateRange } = validatedFields.data;
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez de modifier n'existe pas.",
+            };
+        }
+
+        if (travel.userId !== session.user.id) {
+            return {
+                error: "Vous n'avez pas l'autorisation de modifier ce voyage.",
+            };
+        }
+
+        const updatedTravel = await prisma.travel.update({
+            where: { id: travelId },
+            data: {
+                title,
+                startDate: dateRange.from ? dateRange.from.toISOString() : null,
+                endDate: dateRange.to ? dateRange.to.toISOString() : null,
+            },
+        });
+
+        await pusherServer.trigger(
+            `travel-${travel.id}`,
+            "travel:update",
+            updatedTravel
+        );
+
+        return {
+            data: updatedTravel,
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de modifier votre voyage. Veuillez réessayer plus tard.",
+        };
+    }
+}
+
 export const deleteTravel = async (travelId: string) => {
     try {
         const session = await getServerSession(authOptions);

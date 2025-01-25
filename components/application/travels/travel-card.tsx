@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { getTravelStatus } from "@/lib/utils";
-import { Calendar, ExternalLink, Pencil, Trash, Users } from "lucide-react";
+import { Calendar, ExternalLink, Trash, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import DeletionModal from "../deletion-modal";
+import TravelEditModal from "./edit/travel-edit-modal";
 
 interface TravelCardProps {
     travel: ITravel;
@@ -20,6 +21,7 @@ const TravelCard = ({ travel, showActions }: TravelCardProps) => {
     const { id, title, startDate, endDate } = travel;
     const { statusLabel, statusColor } = getTravelStatus(startDate!, endDate!);
 
+    const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [isDeletingModalOpen, setIsDeletingModalOpen] = useState<boolean>(false);
 
     const router = useRouter();
@@ -77,12 +79,7 @@ const TravelCard = ({ travel, showActions }: TravelCardProps) => {
                     </div>
                     {showActions ? (
                         <div className="flex gap-4">
-                            <Button
-                                className="w-full"
-                                variant="secondary"
-                            >
-                                <Pencil className="mr-2 h-4 w-4" /> Modifier
-                            </Button>
+                            <TravelEditModal travel={travel} isEditModalOpen={isEditModalOpen} setIsEditModalOpen={setIsEditModalOpen} />
                             <Button
                                 className="w-full"
                                 variant="destructive"

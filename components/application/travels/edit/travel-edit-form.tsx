@@ -1,6 +1,6 @@
 "use client";
 
-import { addTravel } from "@/actions/travels";
+import { updateTravel } from "@/actions/travels";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -18,40 +18,41 @@ import { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-interface TravelCreateFormProps {
-    setIsCreateModalOpen: Dispatch<SetStateAction<boolean>>;
+interface TravelEditFormProps {
+    travel: ITravel;
+    setIsEditModalOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const TravelCreateForm = ({ setIsCreateModalOpen }: TravelCreateFormProps) => {
+const TravelEditForm = ({ travel, setIsEditModalOpen }: TravelEditFormProps) => {
     const [isPending, startTransition] = useTransition();
 
     const form = useForm<z.infer<typeof TravelSchema>>({
         resolver: zodResolver(TravelSchema),
         defaultValues: {
-            title: "",
+            title: travel.title,
             dateRange: {
-                from: undefined,
-                to: undefined,
+                from: travel.startDate ? new Date(travel.startDate) : undefined,
+                to: travel.endDate ? new Date(travel.endDate) : undefined,
             }
         },
     });
 
     const onSubmit = async (values: z.infer<typeof TravelSchema>) => {
         startTransition(async () => {
-            const result = await addTravel(values);
+            const result = await updateTravel(travel.id, values);
 
             if (result.error) {
                 toast({
                     variant: "destructive",
-                    title: "Ajout du voyage échoué !",
+                    title: "Modification du voyage échoué !",
                     description: result.error,
                 });
             } else {
                 toast({
-                    title: "Ajout du voyage réussi !",
-                    description: "Votre voyage a été créé avec succès.",
+                    title: "Modification du voyage réussi !",
+                    description: "Votre voyage a été modifié avec succès.",
                 });
-                setIsCreateModalOpen(false);
+                setIsEditModalOpen(false);
             }
         })
     }
@@ -152,11 +153,11 @@ const TravelCreateForm = ({ setIsCreateModalOpen }: TravelCreateFormProps) => {
                             <Loader2 size={20} className="animate-spin" /> &nbsp;
                             Chargement...
                         </>
-                    ) : "Créer votre voyage"}
+                    ) : "Modifier votre voyage"}
                 </Button>
             </form>
         </Form>
     );
 }
 
-export default TravelCreateForm;
+export default TravelEditForm;
