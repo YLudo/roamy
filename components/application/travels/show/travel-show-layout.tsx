@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import TravelShowHeader from "./travel-show-header";
+import TravelShowContent from "./travel-show-content";
 
 const TravelShowLayout = ({ travelId }: { travelId: string }) => {
     const [travel, setTravel] = useState<ITravel>({} as ITravel);
@@ -35,6 +36,7 @@ const TravelShowLayout = ({ travelId }: { travelId: string }) => {
     return (
         <section className="mt-4">
             <TravelShowHeader travel={travel} isLoading={isPending} />
+            <TravelShowContent travel={travel} />
         </section>
     );
 }

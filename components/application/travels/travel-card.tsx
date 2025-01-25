@@ -4,14 +4,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTravelStatus } from "@/lib/utils";
-import { Calendar, ExternalLink, Users } from "lucide-react";
+import { Calendar, ExternalLink, Pencil, Trash, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface TravelCardProps {
     travel: ITravel;
+    showActions?: boolean;
 }
 
-const TravelCard = ({ travel }: TravelCardProps) => {
+const TravelCard = ({ travel, showActions }: TravelCardProps) => {
     const { id, title, startDate, endDate } = travel;
     const { statusLabel, statusColor } = getTravelStatus(startDate!, endDate!);
 
@@ -45,9 +46,26 @@ const TravelCard = ({ travel }: TravelCardProps) => {
                         <p>1 participant</p>
                     </div>
                 </div>
-                <Button className="w-full" onClick={() => router.push(`/travels/${id}`)}>
-                    <ExternalLink /> Voir le voyage
-                </Button>
+                {showActions ? (
+                    <div className="flex gap-4">
+                        <Button
+                            className="w-full"
+                            variant="secondary"
+                        >
+                            <Pencil className="mr-2 h-4 w-4" /> Modifier
+                        </Button>
+                        <Button
+                            className="w-full"
+                            variant="destructive"
+                        >
+                            <Trash className="mr-2 h-4 w-4" /> Supprimer
+                        </Button>
+                    </div>
+                ) : (
+                    <Button className="w-full" onClick={() => router.push(`/travels/${id}`)}>
+                        <ExternalLink /> Voir le voyage
+                    </Button>
+                )}
             </CardContent>
         </Card>
     );
