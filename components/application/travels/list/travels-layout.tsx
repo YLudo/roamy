@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, useTransition } from "react";
 import TravelHeader from "./travel-header";
 import TravelsList from "./travels-list";
-import { filterTravels } from "@/actions/travels";
+import { getTravels } from "@/actions/travels";
 import { toast } from "@/hooks/use-toast";
 import TravelsFilters from "./travels-filters";
 import { useSession } from "next-auth/react";
@@ -24,7 +24,7 @@ const TravelsLayout = () => {
         const { title, status, order } = filters;
 
         startTransition(async () => {
-            const result = await filterTravels(title, status, order);
+            const result = await getTravels(title, status, order);
             
             if (result.error) {
                 toast({
