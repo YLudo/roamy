@@ -147,3 +147,43 @@ export const getTravel = async (travelId: string) => {
         };
     }
 }
+
+export const deleteTravel = async (travelId: string) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez de supprimer n'existe pas.",
+            };
+        }
+
+        if (travel.userId !== session.user.id) {
+            return {
+                error: "Vous n'avez pas l'autorisation de supprimer ce voyage.",
+            };
+        }
+
+        await prisma.travel.delete({
+            where: { id: travelId },
+        });
+
+        return {
+            data: "Le voyage a été supprimé avec succès.",
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de supprimer votre voyage. Veuillez réessayer plus tard.",
+        };
+    }
+}
