@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, useTransition } from "react";
-import TravelHeader from "./travel-header";
+import TravelsHeader from "./travels-header";
 import TravelsList from "./travels-list";
 import { getTravels } from "@/actions/travels";
 import { toast } from "@/hooks/use-toast";
@@ -65,7 +65,7 @@ const TravelsLayout = () => {
 
     return (
         <section className="mt-4">
-            <TravelHeader />
+            <TravelsHeader />
             <TravelsFilters filters={filters} setFilters={setFilters} />
             <TravelsList isLoading={isPending} travels={travels} />
         </section>

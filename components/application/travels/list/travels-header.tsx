@@ -1,7 +1,7 @@
 import { useState } from "react";
 import TravelCreateModal from "../create/travel-create-modal";
 
-const TravelHeader = () => {
+const TravelsHeader = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
 
     return (
@@ -15,4 +15,4 @@ const TravelHeader = () => {
     );
 }
 
-export default TravelHeader;
+export default TravelsHeader;
