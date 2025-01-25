@@ -1,0 +1,42 @@
+"use client";
+
+import { getTravel } from "@/actions/travels";
+import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState, useTransition } from "react";
+import TravelShowHeader from "./travel-show-header";
+
+const TravelShowLayout = ({ travelId }: { travelId: string }) => {
+    const [travel, setTravel] = useState<ITravel>({} as ITravel);
+    const [isPending, startTransition] = useTransition();
+    const router = useRouter();
+
+    const fetchTravel = useCallback(() => {
+        startTransition(async () => {
+            const result = await getTravel(travelId);
+
+            if (result.error) {
+                toast({
+                    variant: "destructive",
+                    title: "Oups !",
+                    description: result.error,
+                });
+                router.push("/travels");
+            } else if (result.data) {
+                setTravel(result.data);
+            }
+        })
+    }, [router, travelId]);
+
+    useEffect(() => {
+        fetchTravel();
+    }, [fetchTravel]);
+
+    return (
+        <section className="mt-4">
+            <TravelShowHeader travel={travel} isLoading={isPending} />
+        </section>
+    );
+}
+
+export default TravelShowLayout;

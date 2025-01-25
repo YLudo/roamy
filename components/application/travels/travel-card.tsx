@@ -1,16 +1,21 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTravelStatus } from "@/lib/utils";
 import { Calendar, ExternalLink, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface TravelCardProps {
     travel: ITravel;
 }
 
 const TravelCard = ({ travel }: TravelCardProps) => {
-    const { title, startDate, endDate } = travel;
+    const { id, title, startDate, endDate } = travel;
     const { statusLabel, statusColor } = getTravelStatus(startDate!, endDate!);
+
+    const router = useRouter();
 
     return (
         <Card>
@@ -40,7 +45,7 @@ const TravelCard = ({ travel }: TravelCardProps) => {
                         <p>1 participant</p>
                     </div>
                 </div>
-                <Button className="w-full">
+                <Button className="w-full" onClick={() => router.push(`/travels/${id}`)}>
                     <ExternalLink /> Voir le voyage
                 </Button>
             </CardContent>

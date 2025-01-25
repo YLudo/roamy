@@ -111,3 +111,39 @@ export const addTravel = async (values: any) => {
         };
     }
 };
+
+export const getTravel = async (travelId: string) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous recherchez n'existe pas.",
+            };
+        }
+
+        if (travel.userId !== session.user.id) {
+            return {
+                error: "Vous n'avez pas l'autorisation d'accéder à ce voyage.",
+            };
+        }
+
+        return {
+            data: travel,
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de récupérer votre voyage. Veuillez réessayer plus tard."
+        };
+    }
+}
