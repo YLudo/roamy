@@ -40,6 +40,10 @@ const TravelsLayout = () => {
             setTravels(data);
         });
 
+        channel.bind("travels:new", (newTravel: ITravel) => {
+            setTravels((prev) => [...prev, newTravel]);
+        });
+
         return () => {
             pusherClient.unsubscribe(channelName);
             pusherClient.unbind("travels:update-list");

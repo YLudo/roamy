@@ -17,7 +17,7 @@ export const getTravels = async () => {
         }
 
         const travels = await prisma.travel.findMany({
-            where: { userId: session.user.id }
+            where: { userId: session.user.id },
         });
 
         return {
@@ -111,8 +111,6 @@ export const addTravel = async (values: any) => {
         
         const { title, dateRange } = validatedFields.data;
 
-        console.log(dateRange);
-
         const newTravel = await prisma.travel.create({
             data: {
                 title,
@@ -121,6 +119,12 @@ export const addTravel = async (values: any) => {
                 userId: session.user.id,
             },
         });
+
+        await pusherServer.trigger(
+            `user-${session.user.id}`,
+            "travels:new",
+            newTravel
+        );
 
         return {
             data: newTravel,

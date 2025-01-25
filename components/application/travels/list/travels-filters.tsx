@@ -9,7 +9,7 @@ const DEBOUNCE_DELAY = 500;
 const TravelsFilters = () => {
     const [title, setTitle] = useState<string>("");
     const [status, setStatus] = useState<string>("all");
-    const [order, setOrder] = useState<string>("asc");
+    const [order, setOrder] = useState<"asc" | "desc">("asc");
     const [, startTransition] = useTransition();
 
     useEffect(() => {
@@ -53,7 +53,7 @@ const TravelsFilters = () => {
             </div>
             <div className="flex-1">
                 <Label htmlFor="order" className="sr-only">Ordonner par date</Label>
-                <Select value={order} onValueChange={(val) => setOrder(val)}>
+                <Select value={order} onValueChange={(val: "asc" | "desc") => setOrder(val)}>
                     <SelectTrigger id="order">
                         <SelectValue placeholder="Ordonner par date" />
                     </SelectTrigger>
