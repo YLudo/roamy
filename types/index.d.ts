@@ -14,3 +14,9 @@ declare interface ITravel {
     createdAt: Date;
     updatedAt: Date;
 }
+
+declare interface TravelFilters {
+    title: string;
+    status: "all" | "non_planned" | "upcoming" | "ongoing" | "completed";
+    order: "asc" | "desc"; 
+}

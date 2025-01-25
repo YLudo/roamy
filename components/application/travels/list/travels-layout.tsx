@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import TravelHeader from "./travel-header";
 import TravelsList from "./travels-list";
-import { getTravels } from "@/actions/travels";
+import { filterTravels } from "@/actions/travels";
 import { toast } from "@/hooks/use-toast";
 import TravelsFilters from "./travels-filters";
 import { useSession } from "next-auth/react";
@@ -14,9 +14,17 @@ const TravelsLayout = () => {
     const [isPending, startTransition] = useTransition();
     const { data: session } = useSession();
 
-    useEffect(() => {
+    const [filters, setFilters] = useState<TravelFilters>({
+        title: "",
+        status: "all",
+        order: "asc",
+    });
+
+    const fetchTravels = useCallback(() => {
+        const { title, status, order } = filters;
+
         startTransition(async () => {
-            const result = await getTravels();
+            const result = await filterTravels(title, status, order);
             
             if (result.error) {
                 toast({
@@ -28,7 +36,11 @@ const TravelsLayout = () => {
                 setTravels(result.data);
             }
         })
-    }, []);
+    }, [filters]);
+
+    useEffect(() => {
+        fetchTravels();
+    }, [fetchTravels]);
 
     useEffect(() => {
         if (!session?.user?.id) return;
@@ -40,20 +52,21 @@ const TravelsLayout = () => {
             setTravels(data);
         });
 
-        channel.bind("travels:new", (newTravel: ITravel) => {
-            setTravels((prev) => [...prev, newTravel]);
+        channel.bind("travels:new", () => {
+            fetchTravels();
         });
 
         return () => {
             pusherClient.unsubscribe(channelName);
             pusherClient.unbind("travels:update-list");
+            pusherClient.unbind("travels:new");
         };
-    }, [session?.user?.id]);
+    }, [fetchTravels, session?.user?.id]);
 
     return (
         <section className="mt-4">
             <TravelHeader />
-            <TravelsFilters />
+            <TravelsFilters filters={filters} setFilters={setFilters} />
             <TravelsList isLoading={isPending} travels={travels} />
         </section>
     );
