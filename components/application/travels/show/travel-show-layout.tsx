@@ -50,14 +50,10 @@ const TravelShowLayout = ({ travelId }: { travelId: string }) => {
 
         channel.bind("travel:update", handleUpdate);
         channel.bind("travel:new-participant", handleUpdate);
-        channel.bind("travel:delete", () => {
-            router.push("/travels");
-        })
 
         return () => {
             pusherClient.unbind("travel:update");
             pusherClient.unbind("travel:new-participant");
-            pusherClient.unbind("travel:delete");
             pusherClient.unsubscribe(channelName);
         }
     }, [fetchTravel, router, travel.id])
@@ -69,7 +65,7 @@ const TravelShowLayout = ({ travelId }: { travelId: string }) => {
     return (
         <section className="mt-4">
             <TravelShowHeader travel={travel} />
-            <TravelShowContent travel={travel} />
+            <TravelShowContent travel={travel} fetchTravel={fetchTravel} />
         </section>
     );
 }
