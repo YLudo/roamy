@@ -41,8 +41,11 @@ export const getTravels = async (title: string, status: string, order: "asc" | "
         }
 
         const travels = await prisma.travel.findMany({
-            where: { 
-                userId: session.user.id,
+            where: {
+                OR: [
+                    { userId: session.user.id },
+                    { participants: { some: { userId: session.user.id } } },
+                ],
                 title: { contains: title, mode: "insensitive" },
                 ...dateFilter
             },
