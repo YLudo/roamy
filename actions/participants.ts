@@ -2,6 +2,7 @@
 
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
+import { pusherServer } from "@/lib/pusher";
 import { getServerSession } from "next-auth";
 
 export const addParticipant = async (travelId: string, participantName: string) => {
@@ -16,6 +17,7 @@ export const addParticipant = async (travelId: string, participantName: string) 
 
         const travel = await prisma.travel.findUnique({
             where: { id: travelId },
+            include: { participants: true },
         });
 
         if (!travel) {
@@ -68,6 +70,23 @@ export const addParticipant = async (travelId: string, participantName: string) 
             },
         });
 
+        await pusherServer.trigger(
+            `travel-${travel.id}`,
+            "travel:new-participant",
+            newParticipant,
+        );
+
+        const participants = [...travel.participants.map(p => p.userId), participant.id];
+        await Promise.all(
+            participants.map(async (participant) => {
+                await pusherServer.trigger(
+                    `user-${participant}`,
+                    "travels:update-list",
+                    newParticipant
+                );
+            })
+        );
+
         return {
             data: newParticipant,
         };
@@ -110,16 +129,10 @@ export const getParticipants = async (travelId: string) => {
             };
         }
 
-        const isParticipant = await prisma.participant.findUnique({
-            where: {
-                userId_travelId: {
-                    userId: session.user.id,
-                    travelId: travelId,
-                },
-            },
-        });
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
 
-        if (!isParticipant && travel.userId !== session.user.id) {
+        if (!isParticipant && !isOwner) {
             return {
                 error: "Vous n'avez pas l'autorisation d'accéder à cette liste de participants.",
             };

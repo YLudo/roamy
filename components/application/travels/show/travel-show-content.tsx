@@ -13,6 +13,15 @@ const TravelShowContent = ({ travel }: { travel: ITravel }) => {
             <TabsContent value="summary">
                 <TravelShowSummary travel={travel} />
             </TabsContent>
+            <TabsContent value="activities">
+                <p>Activités en cours...</p>
+            </TabsContent>
+            <TabsContent value="expenses">
+                <p>Dépenses en cours...</p>
+            </TabsContent>
+            <TabsContent value="documents">
+                <p>Documents en cours...</p>
+            </TabsContent>
         </Tabs>
     );
 }

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
+import { pusherClient } from "@/lib/pusher";
 import { Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState, useTransition } from "react";
@@ -38,6 +39,20 @@ const TravelShowParticipants = ({ travelId }: { travelId: string }) => {
         fetchParticipants();
     }, [fetchParticipants]);
 
+    useEffect(() => {
+        const channelName = `travel-${travelId}`;
+        const channel = pusherClient.subscribe(channelName);
+    
+        channel.bind("travel:new-participant", () => {
+            fetchParticipants();
+        })
+    
+        return () => {
+            pusherClient.unbind("travel:new-participant");
+            pusherClient.unsubscribe(channelName);
+        }
+    }, [fetchParticipants, travelId])
+
     const handleAddParticipant = async () => {
         startTransition(async () => {
             const result = await addParticipant(travelId, newParticipant);
@@ -66,7 +81,6 @@ const TravelShowParticipants = ({ travelId }: { travelId: string }) => {
             <CardContent className="space-y-4">
                 {participants.length > 0 ? (
                     <div className="flex items-center gap-4 flex-grow">
-                        <Badge>{session?.user?.name}</Badge>
                         {participants.map((participant, index) => (
                             <Badge key={index} variant="secondary">{participant.name}</Badge>
                         ))}

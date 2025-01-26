@@ -11,8 +11,15 @@ declare interface ITravel {
     startDate: string | null;
     endDate: string | null;
     userId: string;
+    participants?: IParticipant[];
     createdAt: Date;
     updatedAt: Date;
+}
+
+declare interface IParticipant {
+    id: string;
+    userId: string;
+    travelId: string;
 }
 
 declare interface TravelFilters {

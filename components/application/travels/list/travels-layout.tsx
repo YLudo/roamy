@@ -48,14 +48,17 @@ const TravelsLayout = () => {
         const channelName = `user-${session.user.id}`;
         const channel = pusherClient.subscribe(channelName);
 
-        channel.bind("travels:new", () => {
+        const handleUpdate = () => {
             fetchTravels();
-        });
+        };
+
+        channel.bind("travels:new", handleUpdate);
+        channel.bind("travels:update-list", handleUpdate);
 
         return () => {
-            pusherClient.unsubscribe(channelName);
             pusherClient.unbind("travels:update-list");
             pusherClient.unbind("travels:new");
+            pusherClient.unsubscribe(channelName);
         };
     }, [fetchTravels, session?.user?.id]);
 

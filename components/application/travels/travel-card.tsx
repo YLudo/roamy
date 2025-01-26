@@ -18,7 +18,7 @@ interface TravelCardProps {
 }
 
 const TravelCard = ({ travel, showActions }: TravelCardProps) => {
-    const { id, title, startDate, endDate } = travel;
+    const { id, title, startDate, endDate, participants } = travel;
     const { statusLabel, statusColor } = getTravelStatus(startDate!, endDate!);
 
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
@@ -74,7 +74,7 @@ const TravelCard = ({ travel, showActions }: TravelCardProps) => {
                         )}
                         <div className="flex items-center text-sm font-medium">
                             <Users className="w-4 h-4 mr-2 flex-shrink-0" />
-                            <p>1 participant</p>
+                            <p>{participants ? participants.length + 1 : 1} participant{participants && participants.length > 0 ? "s" : ""}</p>
                         </div>
                     </div>
                     {showActions ? (

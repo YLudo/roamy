@@ -17,14 +17,18 @@ const TravelShowLayout = ({ travelId }: { travelId: string }) => {
     const fetchTravel = useCallback(() => {
         startTransition(async () => {
             const result = await getTravel(travelId);
-
             if (result.error) {
                 toast({
                     variant: "destructive",
                     title: "Oups !",
                     description: result.error,
                 });
-                router.push("/travels");
+                
+                startTransition(() => {
+                    router.push("/travels");
+                });
+    
+                return;
             } else if (result.data) {
                 setTravel(result.data);
             }
@@ -40,15 +44,23 @@ const TravelShowLayout = ({ travelId }: { travelId: string }) => {
         const channelName = `travel-${travel.id}`;
         const channel = pusherClient.subscribe(channelName);
 
-        channel.bind("travel:update", () => {
+        const handleUpdate = () => {
             fetchTravel();
+        };
+
+        channel.bind("travel:update", handleUpdate);
+        channel.bind("travel:new-participant", handleUpdate);
+        channel.bind("travel:delete", () => {
+            router.push("/travels");
         })
 
         return () => {
-            pusherClient.unsubscribe(channelName);
             pusherClient.unbind("travel:update");
+            pusherClient.unbind("travel:new-participant");
+            pusherClient.unbind("travel:delete");
+            pusherClient.unsubscribe(channelName);
         }
-    }, [fetchTravel, travel.id])
+    }, [fetchTravel, router, travel.id])
 
     if (isLoading) {
         return <TravelShowSkeleton />
