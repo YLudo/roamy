@@ -16,6 +16,7 @@ model User {
   password      String?
   accounts      Account[]
   travels       Travel[]
+  participatedTravels Participant[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -32,11 +33,9 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([provider, providerAccountId])
 }
@@ -47,8 +46,20 @@ model Travel {
   startDate String?
   endDate   String?
   userId    String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  participants Participant[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Participant {
+  id        String   @id @default(cuid())
+  userId    String
+  travelId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  travel    Travel   @relation(fields: [travelId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, travelId])
 }
