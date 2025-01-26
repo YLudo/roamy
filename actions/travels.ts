@@ -41,21 +41,19 @@ export const getTravels = async (title: string, status: string, order: "asc" | "
         }
 
         const travels = await prisma.travel.findMany({
-            where: { 
-                userId: session.user.id,
+            where: {
+                OR: [
+                    { userId: session.user.id },
+                    { participants: { some: { userId: session.user.id } } },
+                ],
                 title: { contains: title, mode: "insensitive" },
                 ...dateFilter
             },
             orderBy: {
                 startDate: order,
-            }
+            },
+            include: { participants: { include: { user: true } } },
         });
-
-        await pusherServer.trigger(
-            `user-${session.user.id}`,
-            "travels:update-list",
-            travels,
-        );
 
         return {
             data: travels
@@ -124,6 +122,7 @@ export const getTravel = async (travelId: string) => {
 
         const travel = await prisma.travel.findUnique({
             where: { id: travelId },
+            include: { participants: { include: { user: true } } },
         });
 
         if (!travel) {
@@ -132,7 +131,10 @@ export const getTravel = async (travelId: string) => {
             };
         }
 
-        if (travel.userId !== session.user.id) {
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
+
+        if (!isOwner && !isParticipant) {
             return {
                 error: "Vous n'avez pas l'autorisation d'accéder à ce voyage.",
             };
@@ -170,6 +172,7 @@ export const updateTravel = async (travelId: string, values: any) => {
 
         const travel = await prisma.travel.findUnique({
             where: { id: travelId },
+            include: { participants: true },
         });
 
         if (!travel) {
@@ -199,6 +202,17 @@ export const updateTravel = async (travelId: string, values: any) => {
             updatedTravel
         );
 
+        const participants = travel.participants.map(p => p.userId);
+        await Promise.all(
+            participants.map(async (participant) => {
+                await pusherServer.trigger(
+                    `user-${participant}`,
+                    "travels:update-list",
+                    updatedTravel
+                );
+            })
+        );
+
         return {
             data: updatedTravel,
         };
@@ -221,6 +235,7 @@ export const deleteTravel = async (travelId: string) => {
 
         const travel = await prisma.travel.findUnique({
             where: { id: travelId },
+            include: { participants: true },
         });
 
         if (!travel) {
@@ -238,6 +253,23 @@ export const deleteTravel = async (travelId: string) => {
         await prisma.travel.delete({
             where: { id: travelId },
         });
+
+        await pusherServer.trigger(
+            `travel-${travelId}`,
+            "travel:delete",
+            null
+        );
+
+        const participants = travel.participants.map(p => p.userId);
+        await Promise.all(
+            participants.map(async (participant) => {
+                await pusherServer.trigger(
+                    `user-${participant}`,
+                    "travels:update-list",
+                    null
+                );
+            })
+        );
 
         return {
             data: "Le voyage a été supprimé avec succès.",
