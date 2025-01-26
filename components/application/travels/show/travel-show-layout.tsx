@@ -3,14 +3,15 @@
 import { getTravel } from "@/actions/travels";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { startTransition, useCallback, useEffect, useState } from "react";
 import TravelShowHeader from "./travel-show-header";
 import TravelShowContent from "./travel-show-content";
 import { pusherClient } from "@/lib/pusher";
+import TravelShowSkeleton from "./travel-show-skeleton";
 
 const TravelShowLayout = ({ travelId }: { travelId: string }) => {
     const [travel, setTravel] = useState<ITravel>({} as ITravel);
-    const [isPending, startTransition] = useTransition();
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const router = useRouter();
 
     const fetchTravel = useCallback(() => {
@@ -26,6 +27,7 @@ const TravelShowLayout = ({ travelId }: { travelId: string }) => {
                 router.push("/travels");
             } else if (result.data) {
                 setTravel(result.data);
+                setIsLoading(false);
             }
         })
     }, [router, travelId]);
@@ -48,9 +50,13 @@ const TravelShowLayout = ({ travelId }: { travelId: string }) => {
         }
     }, [fetchTravel, travel.id])
 
+    if (isLoading) {
+        return <TravelShowSkeleton />
+    }
+
     return (
         <section className="mt-4">
-            <TravelShowHeader travel={travel} isLoading={isPending} />
+            <TravelShowHeader travel={travel} />
             <TravelShowContent travel={travel} />
         </section>
     );
