@@ -40,17 +40,13 @@ const TravelsLayout = () => {
 
     useEffect(() => {
         fetchTravels();
-    }, [fetchTravels]);
+    }, [fetchTravels, filters]);
 
     useEffect(() => {
         if (!session?.user?.id) return;
 
         const channelName = `user-${session.user.id}`;
         const channel = pusherClient.subscribe(channelName);
-
-        channel.bind("travels:update-list", (data: ITravel[]) => {
-            setTravels(data);
-        });
 
         channel.bind("travels:new", () => {
             fetchTravels();

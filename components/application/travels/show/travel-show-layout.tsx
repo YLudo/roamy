@@ -27,8 +27,8 @@ const TravelShowLayout = ({ travelId }: { travelId: string }) => {
                 router.push("/travels");
             } else if (result.data) {
                 setTravel(result.data);
-                setIsLoading(false);
             }
+            setIsLoading(false);
         })
     }, [router, travelId]);
 

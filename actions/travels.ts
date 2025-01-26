@@ -51,12 +51,6 @@ export const getTravels = async (title: string, status: string, order: "asc" | "
             }
         });
 
-        await pusherServer.trigger(
-            `user-${session.user.id}`,
-            "travels:update-list",
-            travels,
-        );
-
         return {
             data: travels
         };
