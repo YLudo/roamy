@@ -204,7 +204,7 @@ export const deleteParticipant = async (travelId: string, participantId: string)
 
         await pusherServer.trigger(
             `travel-${travelId}`,
-            "participants:delete",
+            "travel:delete-participant",
             null
         );
 

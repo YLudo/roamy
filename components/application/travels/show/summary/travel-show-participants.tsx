@@ -48,9 +48,10 @@ const TravelShowParticipants = ({ travelId }: { travelId: string }) => {
         const channel = pusherClient.subscribe(channelName);
     
         channel.bind("travel:new-participant", () => fetchParticipants());
-        channel.bind("participants:delete", () => fetchParticipants());
+        channel.bind("travel:delete-participant", () => fetchParticipants());
     
         return () => {
+            pusherClient.unbind("travel:delete-participant");
             pusherClient.unbind("travel:new-participant");
             pusherClient.unsubscribe(channelName);
         }
