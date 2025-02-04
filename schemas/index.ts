@@ -61,3 +61,18 @@ export const TravelSchema = z.object({
             }
         ),
 });
+
+export const ExpenseSchema = z.object({
+    category: z
+        .enum(["ACCOMODATION", "MEAL", "ACTIVITY", "TRANSPORT", "OTHER"], {
+            message: "Vous devez spécifier une catégorie valide.",
+        }),
+    amount: z
+        .number({
+            message: "Vous devez spécifier un montant valide.",
+        })
+        .positive("Vous devez spécifier un montant positif."),
+    date: z
+        .date()
+        .optional(),
+});

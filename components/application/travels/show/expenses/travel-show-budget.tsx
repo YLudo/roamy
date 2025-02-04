@@ -1,6 +1,7 @@
 import { getTotalExpenses } from "@/actions/expenses";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
+import { pusherClient } from "@/lib/pusher";
 import { useCallback, useEffect, useState, useTransition } from "react";
 
 const TravelShowBudget = ({ travelId }: { travelId: string }) => {
@@ -19,7 +20,7 @@ const TravelShowBudget = ({ travelId }: { travelId: string }) => {
                     description: result.error,
                 });
             } else if (result.data) {
-                setTotalExpenses(result.data.totalExpenses);
+                setTotalExpenses(result.data);
             }
         })
     }, [travelId]);
@@ -27,6 +28,18 @@ const TravelShowBudget = ({ travelId }: { travelId: string }) => {
     useEffect(() => {
         fetchTotalExpenses();
     }, [fetchTotalExpenses]);
+
+    useEffect(() => {
+        const channelName = `travel-${travelId}`;
+        const channel = pusherClient.subscribe(channelName);
+        
+        channel.bind("travel:new-expense", () => fetchTotalExpenses());
+        
+        return () => {
+            pusherClient.unbind("travel:new-expense");
+            pusherClient.unsubscribe(channelName);
+        }
+    }, [fetchTotalExpenses, travelId]);
 
     return (
         <Card>
