@@ -254,12 +254,6 @@ export const deleteTravel = async (travelId: string) => {
             where: { id: travelId },
         });
 
-        await pusherServer.trigger(
-            `travel-${travelId}`,
-            "travel:delete",
-            null
-        );
-
         const participants = travel.participants.map(p => p.userId);
         await Promise.all(
             participants.map(async (participant) => {

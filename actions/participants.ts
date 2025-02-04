@@ -150,3 +150,70 @@ export const getParticipants = async (travelId: string) => {
         };
     }
 }
+
+export const deleteParticipant = async (travelId: string, participantId: string) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+            include: { participants: true },
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez d'utiliser n'existe pas.",
+            };
+        }
+
+        if (travel.userId !== session.user.id) {
+            return {
+                error: "Vous n'avez pas l'autorisation de supprimer un participant de ce voyage.",
+            };
+        }
+
+        const participant = await prisma.participant.findUnique({
+            where: {
+                userId_travelId: {
+                    userId: participantId,
+                    travelId: travelId,
+                },
+            },
+        });
+
+        if (!participant) {
+            return {
+                error: "Le participant que vous tentez de supprimer n'existe pas.",
+            }
+        }
+
+        await prisma.participant.delete({
+            where: {
+                userId_travelId: {
+                    userId: participantId,
+                    travelId: travelId,
+                },
+            },
+        });
+
+        await pusherServer.trigger(
+            `travel-${travelId}`,
+            "participants:delete",
+            null
+        );
+
+        return {
+            data: "Le participant a été supprimé avec succès.",
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de supprimer le participant. Veuillez réessayer plus tard.",
+        };
+    }
+}

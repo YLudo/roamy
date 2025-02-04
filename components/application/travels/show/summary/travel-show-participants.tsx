@@ -1,13 +1,14 @@
 "use client";
 
-import { addParticipant, getParticipants } from "@/actions/participants";
+import { addParticipant, deleteParticipant, getParticipants } from "@/actions/participants";
+import DeletionModal from "@/components/application/deletion-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { pusherClient } from "@/lib/pusher";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 
@@ -16,6 +17,9 @@ const TravelShowParticipants = ({ travelId }: { travelId: string }) => {
 
     const [participants, setParticipants] = useState<{ id: string, name: string }[]>([]);
     const [newParticipant, setNewParticipant] = useState<string>("");
+
+    const [isDeletingModalOpen, setIsDeletingModalOpen] = useState<boolean>(false);
+    const [isParticipantToDelete, setIsParticipantToDelete] = useState<string | null>(null);
 
     const [isPending, startTransition] = useTransition();
 
@@ -43,9 +47,8 @@ const TravelShowParticipants = ({ travelId }: { travelId: string }) => {
         const channelName = `travel-${travelId}`;
         const channel = pusherClient.subscribe(channelName);
     
-        channel.bind("travel:new-participant", () => {
-            fetchParticipants();
-        })
+        channel.bind("travel:new-participant", () => fetchParticipants());
+        channel.bind("participants:delete", () => fetchParticipants());
     
         return () => {
             pusherClient.unbind("travel:new-participant");
@@ -73,41 +76,85 @@ const TravelShowParticipants = ({ travelId }: { travelId: string }) => {
         });
     };
 
+    const handleDeleteParticipant = async () => {
+        if (!isParticipantToDelete) return;
+
+        startTransition(async () => {
+            const result = await deleteParticipant(travelId, isParticipantToDelete);
+
+            if (result.error) {
+                toast({
+                    variant: "destructive",
+                    title: "Suppression du participant échouée !",
+                    description: result.error,
+                });
+            } else if (result.data) {
+                toast({
+                    title: "Suppression du participant réussie !",
+                    description: "La participant a été supprimé avec succès.",
+                });
+                setIsDeletingModalOpen(false);
+                setIsParticipantToDelete(null);
+            }
+        });
+    };
+
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Liste des participants</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {participants.length > 0 ? (
-                    <div className="flex items-center gap-4 flex-grow">
-                        {participants.map((participant, index) => (
-                            <Badge key={index} variant="secondary">{participant.name}</Badge>
-                        ))}
+        <>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Liste des participants</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {participants.length > 0 ? (
+                        <div className="flex items-center gap-4 flex-grow">
+                            {participants.map((participant, index) => (
+                                <Badge key={index} variant="secondary">
+                                    {participant.name}
+                                    <X 
+                                        className="h-2 w-2 ml-2 cursor-pointer" 
+                                        onClick={() => {
+                                            setIsParticipantToDelete(participant.id);
+                                            setIsDeletingModalOpen(true);
+                                        }}
+                                    />
+                                </Badge>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-muted-foreground">Il semblerait que vous soyez tout seul ici.</p>
+                    )}
+                    <div className="flex items-center gap-4">
+                        <Input
+                            type="text"
+                            placeholder="Nom du participant"
+                            value={newParticipant}
+                            onChange={(e) => setNewParticipant(e.target.value)}
+                        />
+                        <Button
+                            onClick={handleAddParticipant}
+                            disabled={isPending}
+                        >
+                            {isPending ? (
+                                <Loader2 className="animate-spin h-4 w-4 mr-2" />
+                            ) : (
+                                "Ajouter"
+                            )}
+                        </Button>
                     </div>
-                ) : (
-                    <p className="text-muted-foreground">Il semblerait que vous soyez tout seul ici.</p>
-                )}
-                <div className="flex items-center gap-4">
-                    <Input
-                        type="text"
-                        placeholder="Nom du participant"
-                        value={newParticipant}
-                        onChange={(e) => setNewParticipant(e.target.value)}
-                    />
-                    <Button
-                        onClick={handleAddParticipant}
-                        disabled={isPending}
-                    >
-                        {isPending ? (
-                            <Loader2 className="animate-spin h-4 w-4 mr-2" />
-                        ) : (
-                            "Ajouter"
-                        )}
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+            {isDeletingModalOpen && (
+                <DeletionModal
+                    isOpen={isDeletingModalOpen}
+                    title="Confirmer la suppression du participant"
+                    description="Êtes-vous sûr de vouloir supprimer ce participant ? Cette action est irréversible."
+                    isLoading={isPending}
+                    onConfirm={handleDeleteParticipant}
+                    onCancel={() => setIsDeletingModalOpen(false)}
+                />
+            )}
+        </>
     );
 }
 
