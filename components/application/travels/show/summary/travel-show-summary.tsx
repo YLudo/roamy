@@ -3,7 +3,7 @@ import TravelShowParticipants from "./travel-show-participants";
 
 const TravelShowSummary = ({ travel }: { travel: ITravel }) => {
     return (
-        <div className="mt-4 grid grid-cols-3">
+        <div className="mt-4 grid lg:grid-cols-3">
             <div className="space-y-4">
                 <TravelCard travel={travel} showActions />
                 <TravelShowParticipants travelId={travel.id} />
