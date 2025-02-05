@@ -17,12 +17,13 @@ import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const TravelShowExpensesForm = ({ travelId }: { travelId: string }) => {
+const TravelExpensesForm = ({ travelId }: { travelId: string }) => {
     const [isPending, startTransition] = useTransition();
     
     const form = useForm<z.infer<typeof ExpenseSchema>>({
         resolver: zodResolver(ExpenseSchema),
         defaultValues: {
+            title: "",
             category: "OTHER",
             amount: 0,
             date: undefined,
@@ -57,6 +58,19 @@ const TravelShowExpensesForm = ({ travelId }: { travelId: string }) => {
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="title"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Titre de la dépense</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Entrez le titre de la dépense" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <FormField
                             control={form.control}
                             name="category"
@@ -163,4 +177,4 @@ const TravelShowExpensesForm = ({ travelId }: { travelId: string }) => {
     );
 }
 
-export default TravelShowExpensesForm;
+export default TravelExpensesForm;

@@ -113,10 +113,11 @@ export const addExpense = async (travelId: string, values: any) => {
             };
         }
         
-        const { category, amount, date } = validatedFields.data;
+        const { title, category, amount, date } = validatedFields.data;
 
         const newExpense = await prisma.expense.create({
             data: {
+                title,
                 category,
                 amount,
                 date: date ? date.toISOString() : null,
@@ -136,6 +137,61 @@ export const addExpense = async (travelId: string, values: any) => {
     } catch (error) {
         return {
             error: "Impossible d'ajouter une dépense au voyage. Veuillez réessayer.",
+        };
+    }
+}
+
+export const getExpenses = async (travelId: string) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            }
+                        }
+                    }
+                },
+            }
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez de consulter n'existe pas.",
+            };
+        }
+
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
+
+        if (!isParticipant && !isOwner) {
+            return {
+                error: "Vous n'avez pas l'autorisation d'ajouter une dépense à ce voyage.",
+            };
+        }
+
+        const expenses = await prisma.expense.findMany({
+            where: { travelId: travelId },
+        });
+
+        return {
+            data: expenses,
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de récupérer les dépenses du voyage. Veuillez réessayer.",
         };
     }
 }

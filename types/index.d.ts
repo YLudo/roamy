@@ -27,3 +27,14 @@ declare interface TravelFilters {
     status: "all" | "non_planned" | "upcoming" | "ongoing" | "completed";
     order: "asc" | "desc"; 
 }
+
+declare interface IExpense {
+    id: string;
+    title: string;
+    category: "ACCOMODATION" | "MEAL" | "ACTIVITY" | "TRANSPORT" | "OTHER";
+    amount: number;
+    date: string | null;
+    travelId: string;
+    createdAt: Date;
+    updatedAt: Date;
+}

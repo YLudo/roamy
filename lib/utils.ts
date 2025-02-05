@@ -1,3 +1,4 @@
+import { ExpenseCategory } from "@prisma/client"
 import { clsx, type ClassValue } from "clsx"
 import { LayoutGrid, Plane } from "lucide-react"
 import { twMerge } from "tailwind-merge"
@@ -39,4 +40,19 @@ export const getTravelStatus = (startDate: string, endDate: string): { statusLab
 	}
 	
 	return { statusLabel: "Terminé", statusColor: "destructive" };
+}
+
+export const getCategoryLabel = (category: ExpenseCategory): string => {
+	switch (category) {
+		case ExpenseCategory.ACCOMODATION:
+		  	return "Hébergement"
+		case ExpenseCategory.MEAL:
+		 	return "Repas"
+		case ExpenseCategory.ACTIVITY:
+		  	return "Activité"
+		case ExpenseCategory.TRANSPORT:
+		  	return "Transport"
+		case ExpenseCategory.OTHER:
+		  	return "Autre"
+	}
 }

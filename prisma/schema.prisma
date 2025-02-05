@@ -67,6 +67,7 @@ model Participant {
 
 model Expense {
   id        String          @id @default(cuid())
+  title     String
   category  ExpenseCategory
   amount    Float
   date      DateTime?

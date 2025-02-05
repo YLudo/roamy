@@ -4,7 +4,7 @@ import { toast } from "@/hooks/use-toast";
 import { pusherClient } from "@/lib/pusher";
 import { useCallback, useEffect, useState, useTransition } from "react";
 
-const TravelShowBudget = ({ travelId }: { travelId: string }) => {
+const TravelBudget = ({ travelId }: { travelId: string }) => {
     const [totalExpenses, setTotalExpenses] = useState<number>(0.00);
 
     const [isPending, startTransition] = useTransition();
@@ -57,4 +57,4 @@ const TravelShowBudget = ({ travelId }: { travelId: string }) => {
     );
 }
 
-export default TravelShowBudget;
+export default TravelBudget;
