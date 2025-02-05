@@ -38,3 +38,9 @@ declare interface IExpense {
     createdAt: Date;
     updatedAt: Date;
 }
+
+declare interface ExpenseFilters {
+    title: string;
+    category: "ALL" | "ACCOMODATION" | "MEAL" | "ACTIVITY" | "TRANSPORT" | "OTHER";
+    date: "asc" | "desc";
+}

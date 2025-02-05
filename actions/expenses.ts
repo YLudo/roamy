@@ -141,7 +141,12 @@ export const addExpense = async (travelId: string, values: any) => {
     }
 }
 
-export const getExpenses = async (travelId: string) => {
+export const getExpenses = async (
+    travelId: string,
+    titleFilter: string,
+    categoryFilter: ExpenseFilters["category"],
+    dateFilter: "asc" | "desc"
+) => {
     try {
         const session = await getServerSession(authOptions);
 
@@ -182,8 +187,19 @@ export const getExpenses = async (travelId: string) => {
             };
         }
 
+        const whereClause: any = { 
+            travelId,
+            title: { contains: titleFilter, mode: "insensitive" },
+        };
+        if (categoryFilter !== "ALL") {
+            whereClause.category = categoryFilter;
+        }
+
         const expenses = await prisma.expense.findMany({
-            where: { travelId: travelId },
+            where: whereClause,
+            orderBy: {
+                date: dateFilter,
+            }
         });
 
         return {
