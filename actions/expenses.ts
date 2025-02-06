@@ -55,7 +55,9 @@ export const getTotalExpenses = async (travelId: string) => {
         const totalExpenses = travel.expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
         return {
-            data: totalExpenses
+            data: {
+                total: totalExpenses
+            }
         };
     } catch (error) {
         return {
@@ -208,6 +210,77 @@ export const getExpenses = async (
     } catch (error) {
         return {
             error: "Impossible de récupérer les dépenses du voyage. Veuillez réessayer.",
+        };
+    }
+}
+
+export const deleteExpense = async (travelId: string, expenseId: string) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            }
+                        }
+                    }
+                },
+            }
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez de consulter n'existe pas.",
+            };
+        }
+
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
+
+        if (!isParticipant && !isOwner) {
+            return {
+                error: "Vous n'avez pas l'autorisation d'ajouter une dépense à ce voyage.",
+            };
+        }
+
+        const expense = await prisma.expense.findUnique({
+            where: { id: expenseId },
+        });
+
+        if (!expense || expense.travelId !== travelId) {
+            return {
+                error: "La dépense que vous tentez de supprimer n'existe pas.",
+            };
+        }
+
+        await prisma.expense.delete({
+            where: { id: expenseId }
+        });
+
+        await pusherServer.trigger(
+            `travel-${travel.id}`,
+            "travel:delete-expense",
+            null
+        );
+
+        return {
+            data: "La dépense a été supprimé avec succès.",
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de supprimer la dépense. Veuillez réessayer plus tard.",
         };
     }
 }

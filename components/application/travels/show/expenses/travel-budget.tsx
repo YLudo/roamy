@@ -12,7 +12,7 @@ const TravelBudget = ({ travelId }: { travelId: string }) => {
     const fetchTotalExpenses = useCallback(() => {
         startTransition(async () => {
             const result = await getTotalExpenses(travelId);
-    
+
             if (result.error) {
                 toast({
                     variant: "destructive",
@@ -20,22 +20,24 @@ const TravelBudget = ({ travelId }: { travelId: string }) => {
                     description: result.error,
                 });
             } else if (result.data) {
-                setTotalExpenses(result.data);
+                setTotalExpenses(result.data.total);
             }
         })
     }, [travelId]);
     
     useEffect(() => {
         fetchTotalExpenses();
-    }, [fetchTotalExpenses]);
+    }, [fetchTotalExpenses, travelId]);
 
     useEffect(() => {
         const channelName = `travel-${travelId}`;
         const channel = pusherClient.subscribe(channelName);
         
         channel.bind("travel:new-expense", () => fetchTotalExpenses());
+        channel.bind("travel:delete-expense", () => fetchTotalExpenses());
         
         return () => {
+            pusherClient.unbind("travel:delete-expense");
             pusherClient.unbind("travel:new-expense");
             pusherClient.unsubscribe(channelName);
         }

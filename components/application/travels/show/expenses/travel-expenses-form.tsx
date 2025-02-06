@@ -43,7 +43,7 @@ const TravelExpensesForm = ({ travelId }: { travelId: string }) => {
             } else {
                 toast({
                     title: "Ajout de la dépense réussi !",
-                    description: "Votre dépense a été créé avec succès.",
+                    description: "Votre dépense a été créée avec succès.",
                 });
                 form.reset();
             }
