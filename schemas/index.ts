@@ -61,3 +61,23 @@ export const TravelSchema = z.object({
             }
         ),
 });
+
+export const ExpenseSchema = z.object({
+    title: z
+        .string()
+        .min(3, {
+            message: "Le titre de la dépense doit contenir au moins 3 caractères.",
+        }),
+    category: z
+        .enum(["ACCOMODATION", "MEAL", "ACTIVITY", "TRANSPORT", "OTHER"], {
+            message: "Vous devez spécifier une catégorie valide.",
+        }),
+    amount: z
+        .number({
+            message: "Vous devez spécifier un montant valide.",
+        })
+        .positive("Vous devez spécifier un montant positif."),
+    date: z
+        .date()
+        .optional(),
+});
