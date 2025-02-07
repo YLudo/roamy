@@ -214,6 +214,93 @@ export const getExpenses = async (
     }
 }
 
+export const updateExpense = async (travelId: string, expenseId: string, values: any) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            }
+                        }
+                    }
+                },
+            }
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez de consulter n'existe pas.",
+            };
+        }
+
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
+
+        if (!isParticipant && !isOwner) {
+            return {
+                error: "Vous n'avez pas l'autorisation d'ajouter une dépense à ce voyage.",
+            };
+        }
+
+        const expense = await prisma.expense.findUnique({
+            where: { id: expenseId },
+        });
+
+        if (!expense || expense.travelId !== travelId) {
+            return {
+                error: "La dépense que vous tentez de modifier n'existe pas.",
+            };
+        }
+        
+        const validatedFields = ExpenseSchema.safeParse(values);
+
+        if (!validatedFields.success) {
+            return {
+                error: "Les informations fournies sont invalides. Veuillez vérifier vos saisies.",
+            };
+        }
+
+        const { title, category, amount, date } = validatedFields.data;
+
+        const updatedExpense = await prisma.expense.update({
+            where: { id: expenseId },
+            data: {
+                title,
+                category,
+                amount,
+                date: date ? date.toISOString() : null,
+            },
+        });
+
+        await pusherServer.trigger(
+            `travel-${travelId}`,
+            "travel:update-expense",
+            updatedExpense,
+        );
+
+        return {
+            data: updatedExpense,
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de modifier la dépense. Veuillez réessayer plus tard.",
+        };
+    }
+}
+
 export const deleteExpense = async (travelId: string, expenseId: string) => {
     try {
         const session = await getServerSession(authOptions);

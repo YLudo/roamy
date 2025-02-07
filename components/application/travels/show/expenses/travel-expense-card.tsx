@@ -5,13 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
 import { getCategoryIcon } from "@/lib/utils";
-import { MoreVertical, Trash } from "lucide-react";
+import { MoreVertical, Pencil, Trash } from "lucide-react";
 import { useState, useTransition } from "react";
+import TravelExpensesEditModal from "./edit/travel-expenses-edit-modal";
 
 const TravelExpenseCard = ({ expense }: { expense: IExpense }) => {
     const { title, category, amount, date } = expense;
     const Icon = getCategoryIcon(category);
 
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeletingModalOpen, setIsDeletingModalOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
 
@@ -49,6 +51,13 @@ const TravelExpenseCard = ({ expense }: { expense: IExpense }) => {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={() => setIsEditModalOpen(true)}
+                                >
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    <span>Modifier</span>
+                                </DropdownMenuItem>
                                 <DropdownMenuItem 
                                     className="text-destructive focus:bg-destructive focus:text-white hover:cursor-pointer"
                                     onClick={() => setIsDeletingModalOpen(true)}
@@ -71,6 +80,13 @@ const TravelExpenseCard = ({ expense }: { expense: IExpense }) => {
                     </p>
                 </CardContent>
             </Card>
+            {isEditModalOpen && (
+                <TravelExpensesEditModal 
+                    expense={expense} 
+                    isEditModalOpen={isEditModalOpen}
+                    setIsEditModalOpen={setIsEditModalOpen}
+                />
+            )}
             {isDeletingModalOpen && (
                 <DeletionModal
                     isOpen={isDeletingModalOpen}

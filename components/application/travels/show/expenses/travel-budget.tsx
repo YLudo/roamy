@@ -35,8 +35,10 @@ const TravelBudget = ({ travelId }: { travelId: string }) => {
         
         channel.bind("travel:new-expense", () => fetchTotalExpenses());
         channel.bind("travel:delete-expense", () => fetchTotalExpenses());
+        channel.bind("travel:update-expense", () => fetchTotalExpenses());
         
         return () => {
+            pusherClient.unbind("travel:update-expense");
             pusherClient.unbind("travel:delete-expense");
             pusherClient.unbind("travel:new-expense");
             pusherClient.unsubscribe(channelName);
