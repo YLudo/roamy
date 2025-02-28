@@ -49,6 +49,7 @@ model Travel {
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   participants Participant[]
   expenses     Expense[]
+  activities   Activity[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }
@@ -83,4 +84,16 @@ enum ExpenseCategory {
   ACTIVITY
   TRANSPORT
   OTHER
+}
+
+model Activity {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  address     String?
+  date        DateTime?
+  travelId    String
+  travel      Travel    @relation(fields: [travelId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
