@@ -44,3 +44,14 @@ declare interface ExpenseFilters {
     category: "ALL" | "ACCOMODATION" | "MEAL" | "ACTIVITY" | "TRANSPORT" | "OTHER";
     date: "asc" | "desc";
 }
+
+declare interface IActivity {
+    id: string;
+    title: string;
+    description?: string;
+    address?: string;
+    date?: string | null;
+    travelId: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
