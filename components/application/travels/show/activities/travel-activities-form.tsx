@@ -1,3 +1,4 @@
+import { addActivity } from "@/actions/activities";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { ActivitySchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,7 +31,23 @@ const TravelActivitiesForm = ({ travelId }: { travelId: string }) => {
     });
 
     const onSubmit = async (values: z.infer<typeof ActivitySchema>) => {
-        console.log(values);
+        startTransition(async () => {
+            const result = await addActivity(travelId, values);
+
+            if (result.error) {
+                toast({
+                    variant: "destructive",
+                    title: "Ajout de l'activité échoué !",
+                    description: result.error,
+                });
+            } else {
+                toast({
+                    title: "Ajout de l'activité réussi !",
+                    description: "Votre activité a été créée avec succès.",
+                });
+                form.reset();
+            }
+        });
     }
 
     return (
