@@ -76,9 +76,64 @@ export const addActivity = async (travelId: string, values: any) => {
             data: newActivity,
         };
     } catch (error) {
-        console.log(error);
         return {
             error: "Impossible d'ajouter une activité au voyage. Veuillez réessayer.",
+        };
+    }
+}
+
+export const getActivities = async (
+    travelId: string,
+) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez de consulter n'existe pas.",
+            };
+        }
+
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
+
+        if (!isParticipant && !isOwner) {
+            return {
+                error: "Vous n'avez pas l'autorisation de récupérer les activités de ce voyage.",
+            };
+        }
+
+        const activities = await prisma.activity.findMany({
+            where: { travelId: travelId },
+        });
+
+        return {
+            data: activities,
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de récupérer les activités du voyage. Veuillez réessayer.",
         };
     }
 }

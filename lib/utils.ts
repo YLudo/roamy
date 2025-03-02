@@ -1,5 +1,6 @@
 import { ExpenseCategory } from "@prisma/client"
 import { clsx, type ClassValue } from "clsx"
+import { isBefore, isSameDay } from "date-fns"
 import { Bed, Utensils, Ticket, Bus, MoreHorizontal, LayoutGrid, Plane } from "lucide-react"
 import { twMerge } from "tailwind-merge"
 
@@ -42,7 +43,7 @@ export const getTravelStatus = (startDate: string, endDate: string): { statusLab
 	return { statusLabel: "Terminé", statusColor: "destructive" };
 }
 
-export const getCategoryIcon = (category: ExpenseCategory) => {
+export const getExpenseCategoryIcon = (category: ExpenseCategory) => {
 	switch (category) {
 		case ExpenseCategory.ACCOMODATION:
 		  	return Bed;
@@ -58,3 +59,20 @@ export const getCategoryIcon = (category: ExpenseCategory) => {
 			return null;
 	}
 };
+
+export const getActivityStatus = (date: string): { statusLabel: string; statusColor: "outline" | "secondary" | "default" | "destructive" } => {
+	const now = Date();
+	const activityDate = new Date(date);
+
+	if (!activityDate) {
+		return { statusLabel: "Non planifié", statusColor: "outline" };
+	}
+
+	if (isSameDay(date, now)) {
+        return { statusLabel: "Aujourd'hui", statusColor: "default" };
+    } else if (isBefore(date, now)) {
+        return { statusLabel: "Terminé", statusColor: "destructive" };
+    } else {
+        return { statusLabel: "A venir", statusColor: "outline" };
+    }
+}

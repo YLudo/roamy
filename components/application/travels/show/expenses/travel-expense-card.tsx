@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "@/hooks/use-toast";
-import { getCategoryIcon } from "@/lib/utils";
+import { getExpenseCategoryIcon } from "@/lib/utils";
 import { MoreVertical, Pencil, Trash } from "lucide-react";
 import { useState, useTransition } from "react";
 import TravelExpensesEditModal from "./edit/travel-expenses-edit-modal";
 
 const TravelExpenseCard = ({ expense }: { expense: IExpense }) => {
     const { title, category, amount, date } = expense;
-    const Icon = getCategoryIcon(category);
+    const Icon = getExpenseCategoryIcon(category);
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeletingModalOpen, setIsDeletingModalOpen] = useState(false);

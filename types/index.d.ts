@@ -48,8 +48,8 @@ declare interface ExpenseFilters {
 declare interface IActivity {
     id: string;
     title: string;
-    description?: string;
-    address?: string;
+    description?: string | null;
+    address?: string | null;
     date?: string | null;
     travelId: string;
     createdAt: Date;

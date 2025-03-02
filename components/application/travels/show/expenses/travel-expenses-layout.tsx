@@ -36,7 +36,7 @@ const TravelExpensesLayout = ({ travel }: { travel: ITravel }) => {
                 })));
             }
         })
-    }, [filters]);
+    }, [filters, travel.id]);
 
     useEffect(() => {
         fetchExpenses();
@@ -51,7 +51,7 @@ const TravelExpensesLayout = ({ travel }: { travel: ITravel }) => {
         channel.bind("travel:update-expense", () => fetchExpenses());
             
         return () => {
-            pusherClient.unbind("travel:update-expense", () => fetchExpenses());
+            pusherClient.unbind("travel:update-expense");
             pusherClient.unbind("travel:delete-expense");
             pusherClient.unbind("travel:new-expense");
             pusherClient.unsubscribe(channelName);

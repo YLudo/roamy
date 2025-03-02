@@ -185,7 +185,7 @@ export const getExpenses = async (
 
         if (!isParticipant && !isOwner) {
             return {
-                error: "Vous n'avez pas l'autorisation d'ajouter une dépense à ce voyage.",
+                error: "Vous n'avez pas l'autorisation de récupérer les dépenses de ce voyage.",
             };
         }
 
