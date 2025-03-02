@@ -4,14 +4,22 @@ import { getActivities } from "@/actions/activities";
 import { toast } from "@/hooks/use-toast";
 import TravelActivitiesList from "./travel-activities-list";
 import { pusherClient } from "@/lib/pusher";
+import TravelActivitiesFilters from "./travel-activities-filters";
 
 const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
     const [activities, setActivities] = useState<IActivity[]>([]);
     const [isPending, startTransition] = useTransition();
 
+    const [filters, setFilters] = useState<ActivityFilters>({
+        title: "",
+        date: "asc",
+    });
+
     const fetchActivities = useCallback(() => {
+        const { title, date } = filters;
+
         startTransition(async () => {
-            const result = await getActivities(travel.id);
+            const result = await getActivities(travel.id, title, date);
 
             if (result.error) {
                 toast({
@@ -26,11 +34,11 @@ const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
                 })));
             }
         })
-    }, [travel.id]);
+    }, [filters, travel.id]);
 
     useEffect(() => {
         fetchActivities();
-    }, [fetchActivities]);
+    }, [fetchActivities, filters]);
 
     useEffect(() => {
         const channelName = `travel-${travel.id}`;
@@ -50,6 +58,7 @@ const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
                 <TravelActivitiesForm travelId={travel.id} />
             </div>
             <div className="lg:col-span-2">
+                <TravelActivitiesFilters filters={filters} setFilters={setFilters} />
                 <TravelActivitiesList isLoading={isPending} activities={activities} />
             </div>
         </div>

@@ -55,3 +55,8 @@ declare interface IActivity {
     createdAt: Date;
     updatedAt: Date;
 }
+
+declare interface ActivityFilters {
+    title: string;
+    date: "asc" | "desc";
+}

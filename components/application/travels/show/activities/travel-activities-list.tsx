@@ -21,7 +21,7 @@ const TravelActivitiesList = ({ isLoading, activities }: TravelActivitiesListPro
     }
 
     return (
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-4 mt-4">
             {activities.map((activity, index) => (
                 <TravelActivityCard key={index} activity={activity} />
             ))}

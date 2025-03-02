@@ -84,6 +84,8 @@ export const addActivity = async (travelId: string, values: any) => {
 
 export const getActivities = async (
     travelId: string,
+    titleFilter: string,
+    dateFilter: "asc" | "desc",
 ) => {
     try {
         const session = await getServerSession(authOptions);
@@ -124,8 +126,16 @@ export const getActivities = async (
             };
         }
 
+        const whereClause: any = {
+            travelId,
+            title: { contains: titleFilter, mode: "insensitive" },
+        };
+
         const activities = await prisma.activity.findMany({
-            where: { travelId: travelId },
+            where: whereClause,
+            orderBy: {
+                date: dateFilter,
+            }
         });
 
         return {
