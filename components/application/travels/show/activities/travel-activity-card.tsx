@@ -21,15 +21,15 @@ const TravelActivityCard = ({ activity }: TravelActivityCardProps) => {
             </CardHeader>
             <CardContent className="text-sm space-y-4">
                 <div className="flex items-start gap-2">
-                    <Info className="h-5 w-5" />
+                    <Info className="h-5 w-5 text-primary" />
                     <p>{description || "Aucune description spécifiée"}</p>
                 </div>
                 <div className="flex items-start gap-2">
-                    <MapPin className="h-5 w-5" />
+                    <MapPin className="h-5 w-5 text-primary" />
                     <p>{address || "Aucune adresse spécifiée"}</p>
                 </div>
                 <div className="flex items-start gap-2">
-                    <Calendar className="h-5 w-5" />
+                    <Calendar className="h-5 w-5 text-primary" />
                     <p>{date || "Aucune date spécifiée"}</p>
                 </div>
             </CardContent>
