@@ -13,7 +13,7 @@ const TravelActivityCard = ({ activity }: TravelActivityCardProps) => {
     return (
         <Card>
             <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex justify-between">
                     <div>
                         <CardTitle className="text-xl font-bold">{title}</CardTitle>
                         {description && <CardDescription className="line-clamp-2 mt-1">{description}</CardDescription>}
