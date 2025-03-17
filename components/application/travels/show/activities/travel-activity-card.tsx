@@ -1,7 +1,7 @@
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getActivityStatus } from "@/lib/utils";
-import { Calendar, Info, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Calendar, Info, MapPin, MoreVertical, Pencil, Trash } from "lucide-react";
 
 interface TravelActivityCardProps {
     activity: IActivity;
@@ -9,30 +9,67 @@ interface TravelActivityCardProps {
 
 const TravelActivityCard = ({ activity }: TravelActivityCardProps) => {
     const { title, description, date, address } = activity;
-    const { statusColor, statusLabel } = getActivityStatus(date!);
 
     return (
         <Card>
             <CardHeader>
                 <div className="flex items-center justify-between">
-                    <CardTitle>{title}</CardTitle>
-                    <Badge variant={statusColor}>{statusLabel}</Badge>
+                    <div>
+                        <CardTitle className="text-xl font-bold">{title}</CardTitle>
+                        {description && <CardDescription className="line-clamp-2 mt-1">{description}</CardDescription>}
+                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Ouvrir le menu</span>
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                                 className="cursor-pointer"
+                            >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                <span>Modifier</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                                className="text-destructive focus:bg-destructive focus:text-white hover:cursor-pointer"
+                            >
+                                <Trash className="mr-2 h-4 w-4" />
+                                <span>Supprimer</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </CardHeader>
-            <CardContent className="text-sm space-y-4">
-                <div className="flex items-start gap-2">
-                    <Info className="h-5 w-5 text-primary" />
-                    <p>{description || "Aucune description spécifiée"}</p>
-                </div>
-                <div className="flex items-start gap-2">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    <p>{address || "Aucune adresse spécifiée"}</p>
-                </div>
-                <div className="flex items-start gap-2">
-                    <Calendar className="h-5 w-5 text-primary" />
-                    <p>{date || "Aucune date spécifiée"}</p>
-                </div>
+            <CardContent>
+                {address && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                        <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
+                        <span className="truncate">{address}</span>
+                    </div>
+                )}
+
+                {date && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4 flex-shrink-0 text-primary" />
+                        <span>
+                            {new Date(date).toLocaleDateString("fr-FR", {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                            })}
+                        </span>
+                    </div>
+                )}
             </CardContent>
+            {!description && !address && !date && (
+                <CardFooter className="pt-0 text-sm text-muted-foreground italic">
+                    <Info className="h-4 w-4 mr-2 text-primary" />
+                    Aucune information supplémentaire
+                </CardFooter>
+            )}
         </Card>
     );
 }
