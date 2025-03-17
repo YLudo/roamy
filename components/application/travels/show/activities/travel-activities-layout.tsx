@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import TravelActivitiesList from "./travel-activities-list";
 import { pusherClient } from "@/lib/pusher";
 import TravelActivitiesFilters from "./travel-activities-filters";
+import TravelActivitiesMap from "./travel-activities-map";
 
 const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
     const [activities, setActivities] = useState<IActivity[]>([]);
@@ -13,6 +14,7 @@ const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
     const [filters, setFilters] = useState<ActivityFilters>({
         title: "",
         date: "asc",
+        view: "list",
     });
 
     const fetchActivities = useCallback(() => {
@@ -63,7 +65,11 @@ const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
             </div>
             <div className="lg:col-span-2">
                 <TravelActivitiesFilters filters={filters} setFilters={setFilters} />
-                <TravelActivitiesList isLoading={isPending} activities={activities} />
+                {filters.view === "list" ? (
+                    <TravelActivitiesList isLoading={isPending} activities={activities} />
+                ) : (
+                    <TravelActivitiesMap isLoading={isPending} activities={activities} />
+                )}
             </div>
         </div>
     );

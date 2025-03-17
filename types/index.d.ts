@@ -59,4 +59,5 @@ declare interface IActivity {
 declare interface ActivityFilters {
     title: string;
     date: "asc" | "desc";
+    view: "list" | "map";
 }
