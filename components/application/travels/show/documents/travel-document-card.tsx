@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { toast } from "@/hooks/use-toast";
 import { Download, MoreVertical, Pencil, Trash } from "lucide-react";
 import { useState, useTransition } from "react";
+import TravelDocumentsEditModal from "./edit/travel-documents-edit-modal";
 
 interface TravelDocumentCardProps {
     document: IDocument;
@@ -14,6 +15,7 @@ interface TravelDocumentCardProps {
 const TravelDocumentCard = ({ document }: TravelDocumentCardProps) => {
     const { title, description } = document;
 
+    const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [isDeletingModalOpen, setIsDeletingModalOpen] = useState<boolean>(false);
     const [isPending, startTransition] = useTransition();
 
@@ -56,6 +58,7 @@ const TravelDocumentCard = ({ document }: TravelDocumentCardProps) => {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem
                                     className="cursor-pointer"
+                                    onClick={() => setIsEditModalOpen(true)}
                                 >
                                     <Pencil className="mr-2 h-4 w-4" />
                                     <span>Modifier</span>
@@ -81,6 +84,13 @@ const TravelDocumentCard = ({ document }: TravelDocumentCardProps) => {
                     </Button>
                 </CardFooter>
             </Card>
+            {isEditModalOpen && (
+                <TravelDocumentsEditModal
+                    document={document}
+                    isEditModalOpen={isEditModalOpen}
+                    setIsEditModalOpen={setIsEditModalOpen}
+                />
+            )}
             {isDeletingModalOpen && (
                 <DeletionModal
                     isOpen={isDeletingModalOpen}

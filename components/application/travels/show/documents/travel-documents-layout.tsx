@@ -41,10 +41,12 @@ const TravelDocumentsLayout = ({ travel }: { travel: ITravel }) => {
         const channel = pusherClient.subscribe(channelName);
 
         channel.bind("travel:new-document", () => fetchDocuments());
+        channel.bind("travel:update-document", () => fetchDocuments());
         channel.bind("travel:delete-document", () => fetchDocuments());
 
         return () => {
             pusherClient.unbind("travel:new-document");
+            pusherClient.unbind("travel:update-document");
             pusherClient.unbind("travel:delete-document");
             pusherClient.unsubscribe(channelName);
         }

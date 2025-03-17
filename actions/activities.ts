@@ -226,7 +226,7 @@ export const updateActivity = async (travelId: string, activityId: string, value
         );
 
         return {
-            date: updatedActivity,
+            data: updatedActivity,
         };
     } catch (error) {
         return {

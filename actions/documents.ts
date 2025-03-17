@@ -143,6 +143,91 @@ export const getDocuments = async (
     }
 }
 
+export const updateDocument = async (travelId: string, documentId: string, values: any) => {
+    try {
+        const session = await getServerSession(authOptions);
+        
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez de consulter n'existe pas.",
+            };
+        }
+
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
+
+        if (!isParticipant && !isOwner) {
+            return {
+                error: "Vous n'avez pas l'autorisation de modifier une activité de ce voyage.",
+            };
+        }
+
+        const document = await prisma.document.findUnique({
+            where: { id: documentId },
+        });
+
+        if (!document || document.travelId !== travelId) {
+            return {
+                error: "Le document que vous tentez de modifier n'existe pas.",
+            };
+        }
+
+        const validatedFields = DocumentSchema.safeParse(values);
+
+        if (!validatedFields.success) {
+            return {
+                error: "Les informations fournies sont invalides. Veuillez vérifier vos saisies.",
+            };
+        }
+
+        const { title, description } = validatedFields.data;
+
+        const updatedDocument = await prisma.document.update({
+            where: { id: documentId },
+            data: {
+                title,
+                description: description || null,
+            },
+        });
+
+        await pusherServer.trigger(
+            `travel-${travelId}`,
+            "travel:update-document",
+            updatedDocument,
+        );
+
+        return {
+            data: updatedDocument,
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de modifier le document. Veuillez réessayer plus tard.",
+        };
+    }
+}
+
 export const deleteDocument = async (travelId: string, documentId: string) => {
     try {
         const session = await getServerSession(authOptions);
