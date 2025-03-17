@@ -1,13 +1,19 @@
+import { addDocument } from "@/actions/documents"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { toast } from "@/hooks/use-toast"
 import { DocumentSchema } from "@/schemas"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Loader2 } from "lucide-react"
+import { useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 const TravelDocumentsForm = ({ travelId }: { travelId: string }) => {
+    const [isPending, startTransition] = useTransition();
+
     const form = useForm<z.infer<typeof DocumentSchema>>({
         resolver: zodResolver(DocumentSchema),
         defaultValues: {
@@ -16,7 +22,23 @@ const TravelDocumentsForm = ({ travelId }: { travelId: string }) => {
     });
 
     const onSubmit = async (values: z.infer<typeof DocumentSchema>) => {
-        console.log(values);
+        startTransition(async () => {
+            const result = await addDocument(travelId, values);
+
+            if (result.error) {
+                toast({
+                    variant: "destructive",
+                    title: "Ajout du document échoué !",
+                    description: result.error,
+                });
+            } else {
+                toast({
+                    title: "Ajout du document réussi !",
+                    description: "Votre document a été créé avec succès.",
+                });
+                form.reset();
+            }
+        });
     }
 
     return (
@@ -40,8 +62,13 @@ const TravelDocumentsForm = ({ travelId }: { travelId: string }) => {
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" className="w-full">
-                            Ajouter un document
+                        <Button type="submit" className="w-full" disabled={isPending}>
+                            {isPending ? (
+                                <>
+                                    <Loader2 size={20} className="animate-spin" /> &nbsp;
+                                    Chargement...
+                                </>
+                            ) : "Ajouter un document"}
                         </Button>
                     </form>
                 </Form>
