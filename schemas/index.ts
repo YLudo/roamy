@@ -98,3 +98,11 @@ export const ActivitySchema = z.object({
         .date()
         .optional()
 });
+
+export const DocumentSchema = z.object({
+    title: z
+        .string()
+        .min(3, {
+            message: "Le titre du document doit contenir au moins 3 caractères.",
+        }),
+});
