@@ -45,9 +45,11 @@ const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
         const channel = pusherClient.subscribe(channelName);
 
         channel.bind("travel:new-acitvity", () => fetchActivities());
+        channel.bind("travel:update-activity", () => fetchActivities());
 
         return () => {
             pusherClient.unbind("travel:new-acitvity");
+            pusherClient.unbind("travel:update-activity");
             pusherClient.unsubscribe(channelName);
         }
     }, [fetchActivities, travel.id]);

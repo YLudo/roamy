@@ -147,3 +147,90 @@ export const getActivities = async (
         };
     }
 }
+
+export const updateActivity = async (travelId: string, activityId: string, values: any) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez de consulter n'existe pas.",
+            };
+        }
+
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
+
+        if (!isParticipant && !isOwner) {
+            return {
+                error: "Vous n'avez pas l'autorisation de modifier une activité de ce voyage.",
+            };
+        }
+
+        const activity = await prisma.activity.findUnique({
+            where: { id: activityId },
+        });
+
+        if (!activity || activity.travelId !== travelId) {
+            return {
+                error: "L'activité que vous tentez de modifier n'existe pas.",
+            };
+        }
+
+        const validatedFields = ActivitySchema.safeParse(values);
+
+        if (!validatedFields.success) {
+            return {
+                error: "Les informations fournies sont invalides. Veuillez vérifier vos saisies.",
+            };
+        }
+
+        const { title, description, address, date } = validatedFields.data;
+
+        const updatedActivity = await prisma.activity.update({
+            where: { id: activityId },
+            data: {
+                title,
+                description: description || null,
+                address: address || null,
+                date: date ? date.toISOString() : null,
+            },
+        });
+
+        await pusherServer.trigger(
+            `travel-${travelId}`,
+            "travel:update-activity",
+            updatedActivity,
+        );
+
+        return {
+            date: updatedActivity,
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de modifier l'activité. Veuillez réessayer plus tard.",
+        };
+    }
+}
