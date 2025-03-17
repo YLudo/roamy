@@ -54,11 +54,12 @@ export const addDocument = async (travelId: string, values: any) => {
             };
         }
 
-        const { title } = validatedFields.data;
+        const { title, description } = validatedFields.data;
 
         const newDocument = await prisma.document.create({
             data: {
                 title,
+                description,
                 url: "",
                 travelId,
             },

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download } from "lucide-react";
 
 interface TravelDocumentCardProps {
@@ -7,12 +7,13 @@ interface TravelDocumentCardProps {
 }
 
 const TravelDocumentCard = ({ document }: TravelDocumentCardProps) => {
-    const { title } = document;
+    const { title, description } = document;
 
     return (
-        <Card>
-            <CardHeader>
+        <Card className="flex flex-col">
+            <CardHeader className="flex-grow">
                 <CardTitle>{title}</CardTitle>
+                {description && <CardDescription>{description}</CardDescription>}
             </CardHeader>
             <CardFooter>
                 <Button

@@ -100,11 +100,12 @@ model Activity {
 }
 
 model Document {
-  id        String   @id @default(cuid())
-  title     String
-  url       String
-  travelId  String
-  travel    Travel   @relation(fields: [travelId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  url         String
+  travelId    String
+  travel      Travel   @relation(fields: [travelId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -105,4 +105,7 @@ export const DocumentSchema = z.object({
         .min(3, {
             message: "Le titre du document doit contenir au moins 3 caractères.",
         }),
+    description: z
+        .string()
+        .optional(),
 });

@@ -65,6 +65,7 @@ declare interface ActivityFilters {
 declare interface IDocument {
     id: string;
     title: string;
+    description?: string | null;
     url: string;
     travelId: string;
     createdAt: Date;

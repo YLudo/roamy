@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/hooks/use-toast"
 import { DocumentSchema } from "@/schemas"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -18,6 +19,7 @@ const TravelDocumentsForm = ({ travelId }: { travelId: string }) => {
         resolver: zodResolver(DocumentSchema),
         defaultValues: {
             title: "",
+            description: "",
         },
     });
 
@@ -57,6 +59,19 @@ const TravelDocumentsForm = ({ travelId }: { travelId: string }) => {
                                     <FormLabel>Titre du document</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Entrez le titre du document..." {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Description du document</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="Entrez la description du document..." {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
