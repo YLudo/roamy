@@ -61,3 +61,12 @@ declare interface ActivityFilters {
     date: "asc" | "desc";
     view: "list" | "map";
 }
+
+declare interface IDocument {
+    id: string;
+    title: string;
+    url: string;
+    travelId: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
