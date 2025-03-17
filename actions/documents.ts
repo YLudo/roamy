@@ -1,12 +1,12 @@
 "use server";
 
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { pusherServer } from "@/lib/pusher";
-import { ActivitySchema } from "@/schemas";
-import { getServerSession } from "next-auth"
+import { DocumentSchema } from "@/schemas";
+import { getServerSession } from "next-auth";
 
-export const addActivity = async (travelId: string, values: any) => {
+export const addDocument = async (travelId: string, values: any) => {
     try {
         const session = await getServerSession(authOptions);
 
@@ -42,11 +42,11 @@ export const addActivity = async (travelId: string, values: any) => {
 
         if (!isParticipant && !isOwner) {
             return {
-                error: "Vous n'avez pas l'autorisation d'ajouter une activité à ce voyage.",
+                error: "Vous n'avez pas l'autorisation d'ajouter un document à ce voyage.",
             };
         }
 
-        const validatedFields = ActivitySchema.safeParse(values);
+        const validatedFields = DocumentSchema.safeParse(values);
 
         if (!validatedFields.success) {
             return {
@@ -54,38 +54,36 @@ export const addActivity = async (travelId: string, values: any) => {
             };
         }
 
-        const { title, description, address, date } = validatedFields.data;
+        const { title, description } = validatedFields.data;
 
-        const newActivity = await prisma.activity.create({
+        const newDocument = await prisma.document.create({
             data: {
                 title,
                 description,
-                address,
-                date: date ? date.toISOString() : null,
-                travelId
+                url: "",
+                travelId,
             },
         });
 
         await pusherServer.trigger(
             `travel-${travelId}`,
-            "travel:new-acitvity",
-            newActivity,
+            "travel:new-document",
+            newDocument,
         );
 
         return {
-            data: newActivity,
-        };
+            data: newDocument,
+        }
     } catch (error) {
         return {
-            error: "Impossible d'ajouter une activité au voyage. Veuillez réessayer.",
+            error: "Impossible d'ajouter un document à ce voyage. Veuillez réessayer.",
         };
     }
 }
 
-export const getActivities = async (
+export const getDocuments = async (
     travelId: string,
     titleFilter: string,
-    dateFilter: "asc" | "desc",
 ) => {
     try {
         const session = await getServerSession(authOptions);
@@ -131,27 +129,24 @@ export const getActivities = async (
             title: { contains: titleFilter, mode: "insensitive" },
         };
 
-        const activities = await prisma.activity.findMany({
-            where: whereClause,
-            orderBy: {
-                date: dateFilter,
-            }
+        const documents = await prisma.document.findMany({
+            where: whereClause
         });
 
         return {
-            data: activities,
+            data: documents,
         };
     } catch (error) {
         return {
-            error: "Impossible de récupérer les activités du voyage. Veuillez réessayer.",
-        };
+            error: "Impossible de récupérer les documents du voyage. Veuillez réessayer.",
+        }
     }
 }
 
-export const updateActivity = async (travelId: string, activityId: string, values: any) => {
+export const updateDocument = async (travelId: string, documentId: string, values: any) => {
     try {
         const session = await getServerSession(authOptions);
-
+        
         if (!session || !session.user.id) {
             return {
                 error: "Votre session a expiré. Veuillez vous reconnecter.",
@@ -189,17 +184,17 @@ export const updateActivity = async (travelId: string, activityId: string, value
             };
         }
 
-        const activity = await prisma.activity.findUnique({
-            where: { id: activityId },
+        const document = await prisma.document.findUnique({
+            where: { id: documentId },
         });
 
-        if (!activity || activity.travelId !== travelId) {
+        if (!document || document.travelId !== travelId) {
             return {
-                error: "L'activité que vous tentez de modifier n'existe pas.",
+                error: "Le document que vous tentez de modifier n'existe pas.",
             };
         }
 
-        const validatedFields = ActivitySchema.safeParse(values);
+        const validatedFields = DocumentSchema.safeParse(values);
 
         if (!validatedFields.success) {
             return {
@@ -207,35 +202,33 @@ export const updateActivity = async (travelId: string, activityId: string, value
             };
         }
 
-        const { title, description, address, date } = validatedFields.data;
+        const { title, description } = validatedFields.data;
 
-        const updatedActivity = await prisma.activity.update({
-            where: { id: activityId },
+        const updatedDocument = await prisma.document.update({
+            where: { id: documentId },
             data: {
                 title,
                 description: description || null,
-                address: address || null,
-                date: date ? date.toISOString() : null,
             },
         });
 
         await pusherServer.trigger(
             `travel-${travelId}`,
-            "travel:update-activity",
-            updatedActivity,
+            "travel:update-document",
+            updatedDocument,
         );
 
         return {
-            data: updatedActivity,
+            data: updatedDocument,
         };
     } catch (error) {
         return {
-            error: "Impossible de modifier l'activité. Veuillez réessayer plus tard.",
+            error: "Impossible de modifier le document. Veuillez réessayer plus tard.",
         };
     }
 }
 
-export const deleteActivity = async (travelId: string, activityId: string) => {
+export const deleteDocument = async (travelId: string, documentId: string) => {
     try {
         const session = await getServerSession(authOptions);
 
@@ -276,32 +269,32 @@ export const deleteActivity = async (travelId: string, activityId: string) => {
             };
         }
 
-        const activity = await prisma.activity.findUnique({
-            where: { id: activityId },
+        const document = await prisma.document.findUnique({
+            where: { id: documentId },
         });
 
-        if (!activity || activity.travelId !== travelId) {
+        if (!document || document.travelId !== travelId) {
             return {
-                error: "L'activité que vous tentez de supprimer n'existe pas.",
+                error: "Le document que vous tentez de supprimer n'existe pas.",
             };
         }
 
-        await prisma.activity.delete({
-            where: { id: activityId }
+        await prisma.document.delete({
+            where: { id: documentId },
         });
 
         await pusherServer.trigger(
             `travel-${travel.id}`,
-            "travel:delete-activity",
-            null
+            "travel:delete-document",
+            null,
         );
 
         return {
-            data: "L'activité a été supprimée avec succès.",
+            data: "Le document a été supprimé avec succès.",
         };
     } catch (error) {
         return {
-            error: "Impossible de supprimer l'activité. Veuillez réessayer plus tard.",
+            error: "Impossible de supprimer le document. Veuillez réessayer plus tard.",
         };
     }
 }

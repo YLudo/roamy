@@ -2,6 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TravelShowSummary from "./summary/travel-show-summary";
 import TravelExpensesLayout from "./expenses/travel-expenses-layout";
 import TravelActivitiesLayout from "./activities/travel-activities-layout";
+import TravelDocumentsLayout from "./documents/travel-documents-layout";
 
 const TravelShowContent = ({ travel, fetchTravel }: { travel: ITravel, fetchTravel: () => void }) => {
     return (
@@ -22,7 +23,7 @@ const TravelShowContent = ({ travel, fetchTravel }: { travel: ITravel, fetchTrav
                 <TravelExpensesLayout travel={travel} />
             </TabsContent>
             <TabsContent value="documents">
-                <p>Documents en cours...</p>
+                <TravelDocumentsLayout travel={travel} />
             </TabsContent>
         </Tabs>
     );
