@@ -4,14 +4,21 @@ import { getDocuments } from "@/actions/documents";
 import { toast } from "@/hooks/use-toast";
 import { pusherClient } from "@/lib/pusher";
 import TravelDocumentsList from "./travel-documents-list";
+import TravelDocumentsFilters from "./travel-documents-filters";
 
 const TravelDocumentsLayout = ({ travel }: { travel: ITravel }) => {
     const [documents, setDocuments] = useState<IDocument[]>([]);
     const [isPending, startTransition] = useTransition();
 
+    const [filters, setFilters] = useState<DocumentsFilters>({
+        title: "",
+    });
+
     const fetchDocuments = useCallback(() => {
+        const { title } = filters;
+
         startTransition(async () => {
-            const result = await getDocuments(travel.id);
+            const result = await getDocuments(travel.id, title);
 
             if (result.error) {
                 toast({
@@ -23,11 +30,11 @@ const TravelDocumentsLayout = ({ travel }: { travel: ITravel }) => {
                 setDocuments(result.data);
             }
         })
-    }, [travel.id]);
+    }, [filters, travel.id]);
 
     useEffect(() => {
         fetchDocuments();
-    }, [fetchDocuments]);
+    }, [fetchDocuments, filters]);
 
     useEffect(() => {
         const channelName = `travel-${travel.id}`;
@@ -45,6 +52,7 @@ const TravelDocumentsLayout = ({ travel }: { travel: ITravel }) => {
         <div className="mt-4 grid lg:grid-cols-3 gap-4">
             <TravelDocumentsForm travelId={travel.id} />
             <div className="lg:col-span-2">
+                <TravelDocumentsFilters filters={filters} setFilters={setFilters} />
                 <TravelDocumentsList isLoading={isPending} documents={documents} />
             </div>
         </div>

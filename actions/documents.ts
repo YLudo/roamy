@@ -81,7 +81,10 @@ export const addDocument = async (travelId: string, values: any) => {
     }
 }
 
-export const getDocuments = async (travelId: string) => {
+export const getDocuments = async (
+    travelId: string,
+    titleFilter: string,
+) => {
     try {
         const session = await getServerSession(authOptions);
 
@@ -121,10 +124,13 @@ export const getDocuments = async (travelId: string) => {
             };
         }
 
+        const whereClause: any = {
+            travelId,
+            title: { contains: titleFilter, mode: "insensitive" },
+        };
+
         const documents = await prisma.document.findMany({
-            where: {
-                travelId,
-            }
+            where: whereClause
         });
 
         return {

@@ -71,3 +71,7 @@ declare interface IDocument {
     createdAt: Date;
     updatedAt: Date;
 }
+
+declare interface DocumentsFilters {
+    title: string;
+}
