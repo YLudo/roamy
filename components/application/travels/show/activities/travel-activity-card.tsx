@@ -2,8 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Calendar, Info, MapPin, MoreVertical, Pencil, Trash } from "lucide-react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import TravelActivitiesEditModal from "./edit/travel-activities-edit-modal";
+import { deleteActivity } from "@/actions/activities";
+import { toast } from "@/hooks/use-toast";
+import DeletionModal from "@/components/application/deletion-modal";
 
 interface TravelActivityCardProps {
     activity: IActivity;
@@ -13,6 +16,28 @@ const TravelActivityCard = ({ activity }: TravelActivityCardProps) => {
     const { title, description, date, address } = activity;
 
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+    const [isDeletingModalOpen, setIsDeletingModalOpen] = useState<boolean>(false);
+    const [isPending, startTransition] = useTransition();
+
+    const handleDelete = async () => {
+        startTransition(async () => {
+            const result = await deleteActivity(activity.travelId, activity.id);
+
+            if (result.error) {
+                toast({
+                    variant: "destructive",
+                    title: "Suppression de l'activité échouée !",
+                    description: result.error,
+                });
+            } else {
+                toast({
+                    title: "Suppression de l'activité réussie !",
+                    description: "Votre activité a été supprimée avec succès.",
+                });
+                setIsDeletingModalOpen(false);
+            }
+        });
+    };
 
     return (
         <>
@@ -40,6 +65,7 @@ const TravelActivityCard = ({ activity }: TravelActivityCardProps) => {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem 
                                     className="text-destructive focus:bg-destructive focus:text-white hover:cursor-pointer"
+                                    onClick={() => setIsDeletingModalOpen(true)}
                                 >
                                     <Trash className="mr-2 h-4 w-4" />
                                     <span>Supprimer</span>
@@ -82,6 +108,16 @@ const TravelActivityCard = ({ activity }: TravelActivityCardProps) => {
                     activity={activity}
                     isEditModalOpen={isEditModalOpen}
                     setIsEditModalOpen={setIsEditModalOpen}
+                />
+            )}
+            {isDeletingModalOpen && (
+                <DeletionModal
+                    isOpen={isDeletingModalOpen}
+                    title="Confirmer la suppression de l'activité"
+                    description="Êtes-vous sûr de vouloir supprimer cette activité ? Cette action est irréversible."
+                    isLoading={isPending}
+                    onConfirm={handleDelete}
+                    onCancel={() => setIsDeletingModalOpen(false)}
                 />
             )}
         </>

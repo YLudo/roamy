@@ -234,3 +234,74 @@ export const updateActivity = async (travelId: string, activityId: string, value
         };
     }
 }
+
+export const deleteActivity = async (travelId: string, activityId: string) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            }
+                        }
+                    }
+                },
+            }
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez de consulter n'existe pas.",
+            };
+        }
+
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
+
+        if (!isParticipant && !isOwner) {
+            return {
+                error: "Vous n'avez pas l'autorisation de supprimer une activité de ce voyage.",
+            };
+        }
+
+        const activity = await prisma.activity.findUnique({
+            where: { id: activityId },
+        });
+
+        if (!activity || activity.travelId !== travelId) {
+            return {
+                error: "L'activité que vous tentez de supprimer n'existe pas.",
+            };
+        }
+
+        await prisma.activity.delete({
+            where: { id: activityId }
+        });
+
+        await pusherServer.trigger(
+            `travel-${travel.id}`,
+            "travel:delete-activity",
+            null
+        );
+
+        return {
+            data: "L'activité a été supprimée avec succès.",
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de supprimer l'activité. Veuillez réessayer plus tard.",
+        };
+    }
+}
