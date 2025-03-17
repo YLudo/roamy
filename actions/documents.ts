@@ -142,3 +142,74 @@ export const getDocuments = async (
         }
     }
 }
+
+export const deleteDocument = async (travelId: string, documentId: string) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            }
+                        }
+                    }
+                },
+            }
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez de consulter n'existe pas.",
+            };
+        }
+
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
+
+        if (!isParticipant && !isOwner) {
+            return {
+                error: "Vous n'avez pas l'autorisation de supprimer une activité de ce voyage.",
+            };
+        }
+
+        const document = await prisma.document.findUnique({
+            where: { id: documentId },
+        });
+
+        if (!document || document.travelId !== travelId) {
+            return {
+                error: "Le document que vous tentez de supprimer n'existe pas.",
+            };
+        }
+
+        await prisma.document.delete({
+            where: { id: documentId },
+        });
+
+        await pusherServer.trigger(
+            `travel-${travel.id}`,
+            "travel:delete-document",
+            null,
+        );
+
+        return {
+            data: "Le document a été supprimé avec succès.",
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de supprimer le document. Veuillez réessayer plus tard.",
+        };
+    }
+}
