@@ -81,3 +81,20 @@ export const ExpenseSchema = z.object({
         .date()
         .optional(),
 });
+
+export const ActivitySchema = z.object({
+    title: z
+        .string()
+        .min(3, {
+            message: "Le titre de l'activité doit contenir au moins 3 caractères.",
+        }),
+    description: z
+        .string()
+        .optional(),
+    address: z
+        .string()
+        .optional(),
+    date: z
+        .date()
+        .optional()
+});

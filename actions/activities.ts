@@ -1,12 +1,12 @@
 "use server";
 
-import { authOptions } from "@/lib/auth";
+import { authOptions } from "@/lib/auth"
 import prisma from "@/lib/db";
 import { pusherServer } from "@/lib/pusher";
-import { ExpenseSchema } from "@/schemas";
-import { getServerSession } from "next-auth";
+import { ActivitySchema } from "@/schemas";
+import { getServerSession } from "next-auth"
 
-export const getTotalExpenses = async (travelId: string) => {
+export const addActivity = async (travelId: string, values: any) => {
     try {
         const session = await getServerSession(authOptions);
 
@@ -24,17 +24,11 @@ export const getTotalExpenses = async (travelId: string) => {
                         user: {
                             select: {
                                 id: true,
-                                name: true,
                             }
                         }
                     }
                 },
-                expenses: {
-                    select: {
-                        amount: true,
-                    },
-                },
-            }
+            },
         });
 
         if (!travel) {
@@ -48,80 +42,25 @@ export const getTotalExpenses = async (travelId: string) => {
 
         if (!isParticipant && !isOwner) {
             return {
-                error: "Vous n'avez pas l'autorisation d'accéder à ces dépenses.",
+                error: "Vous n'avez pas l'autorisation d'ajouter une activité à ce voyage.",
             };
         }
 
-        const totalExpenses = travel.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+        const validatedFields = ActivitySchema.safeParse(values);
 
-        return {
-            data: {
-                total: totalExpenses
-            }
-        };
-    } catch (error) {
-        return {
-            error: "Impossible de récupérer les dépenses du voyage. Veuillez réessayer.",
-        };
-    }
-}
-
-export const addExpense = async (travelId: string, values: any) => {
-    try {
-        const session = await getServerSession(authOptions);
-
-        if (!session || !session.user.id) {
-            return {
-                error: "Votre session a expiré. Veuillez vous reconnecter.",
-            };
-        }
-
-        const travel = await prisma.travel.findUnique({
-            where: { id: travelId },
-            include: {
-                participants: {
-                    include: {
-                        user: {
-                            select: {
-                                id: true,
-                                name: true,
-                            }
-                        }
-                    }
-                },
-            }
-        });
-
-        if (!travel) {
-            return {
-                error: "Le voyage que vous tentez de consulter n'existe pas.",
-            };
-        }
-
-        const isOwner = travel.userId === session.user.id;
-        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
-
-        if (!isParticipant && !isOwner) {
-            return {
-                error: "Vous n'avez pas l'autorisation d'ajouter une dépense à ce voyage.",
-            };
-        }
-
-        const validatedFields = ExpenseSchema.safeParse(values);
-    
         if (!validatedFields.success) {
             return {
                 error: "Les informations fournies sont invalides. Veuillez vérifier vos saisies.",
             };
         }
-        
-        const { title, category, amount, date } = validatedFields.data;
 
-        const newExpense = await prisma.expense.create({
+        const { title, description, address, date } = validatedFields.data;
+
+        const newActivity = await prisma.activity.create({
             data: {
                 title,
-                category,
-                amount,
+                description,
+                address,
                 date: date ? date.toISOString() : null,
                 travelId
             },
@@ -129,25 +68,24 @@ export const addExpense = async (travelId: string, values: any) => {
 
         await pusherServer.trigger(
             `travel-${travelId}`,
-            "travel:new-expense",
-            newExpense
+            "travel:new-acitvity",
+            newActivity,
         );
 
         return {
-            data: newExpense,
+            data: newActivity,
         };
     } catch (error) {
         return {
-            error: "Impossible d'ajouter une dépense au voyage. Veuillez réessayer.",
+            error: "Impossible d'ajouter une activité au voyage. Veuillez réessayer.",
         };
     }
 }
 
-export const getExpenses = async (
+export const getActivities = async (
     travelId: string,
     titleFilter: string,
-    categoryFilter: ExpenseFilters["category"],
-    dateFilter: "asc" | "desc"
+    dateFilter: "asc" | "desc",
 ) => {
     try {
         const session = await getServerSession(authOptions);
@@ -166,11 +104,10 @@ export const getExpenses = async (
                         user: {
                             select: {
                                 id: true,
-                                name: true,
                             }
                         }
                     }
-                },
+                }
             }
         });
 
@@ -185,19 +122,16 @@ export const getExpenses = async (
 
         if (!isParticipant && !isOwner) {
             return {
-                error: "Vous n'avez pas l'autorisation de récupérer les dépenses de ce voyage.",
+                error: "Vous n'avez pas l'autorisation de récupérer les activités de ce voyage.",
             };
         }
 
-        const whereClause: any = { 
+        const whereClause: any = {
             travelId,
             title: { contains: titleFilter, mode: "insensitive" },
         };
-        if (categoryFilter !== "ALL") {
-            whereClause.category = categoryFilter;
-        }
 
-        const expenses = await prisma.expense.findMany({
+        const activities = await prisma.activity.findMany({
             where: whereClause,
             orderBy: {
                 date: dateFilter,
@@ -205,16 +139,16 @@ export const getExpenses = async (
         });
 
         return {
-            data: expenses,
+            data: activities,
         };
     } catch (error) {
         return {
-            error: "Impossible de récupérer les dépenses du voyage. Veuillez réessayer.",
+            error: "Impossible de récupérer les activités du voyage. Veuillez réessayer.",
         };
     }
 }
 
-export const updateExpense = async (travelId: string, expenseId: string, values: any) => {
+export const updateActivity = async (travelId: string, activityId: string, values: any) => {
     try {
         const session = await getServerSession(authOptions);
 
@@ -236,7 +170,7 @@ export const updateExpense = async (travelId: string, expenseId: string, values:
                             }
                         }
                     }
-                },
+                }
             }
         });
 
@@ -251,21 +185,21 @@ export const updateExpense = async (travelId: string, expenseId: string, values:
 
         if (!isParticipant && !isOwner) {
             return {
-                error: "Vous n'avez pas l'autorisation d'ajouter une dépense à ce voyage.",
+                error: "Vous n'avez pas l'autorisation de modifier une activité de ce voyage.",
             };
         }
 
-        const expense = await prisma.expense.findUnique({
-            where: { id: expenseId },
+        const activity = await prisma.activity.findUnique({
+            where: { id: activityId },
         });
 
-        if (!expense || expense.travelId !== travelId) {
+        if (!activity || activity.travelId !== travelId) {
             return {
-                error: "La dépense que vous tentez de modifier n'existe pas.",
+                error: "L'activité que vous tentez de modifier n'existe pas.",
             };
         }
-        
-        const validatedFields = ExpenseSchema.safeParse(values);
+
+        const validatedFields = ActivitySchema.safeParse(values);
 
         if (!validatedFields.success) {
             return {
@@ -273,35 +207,35 @@ export const updateExpense = async (travelId: string, expenseId: string, values:
             };
         }
 
-        const { title, category, amount, date } = validatedFields.data;
+        const { title, description, address, date } = validatedFields.data;
 
-        const updatedExpense = await prisma.expense.update({
-            where: { id: expenseId },
+        const updatedActivity = await prisma.activity.update({
+            where: { id: activityId },
             data: {
                 title,
-                category,
-                amount,
+                description: description || null,
+                address: address || null,
                 date: date ? date.toISOString() : null,
             },
         });
 
         await pusherServer.trigger(
             `travel-${travelId}`,
-            "travel:update-expense",
-            updatedExpense,
+            "travel:update-activity",
+            updatedActivity,
         );
 
         return {
-            data: updatedExpense,
+            date: updatedActivity,
         };
     } catch (error) {
         return {
-            error: "Impossible de modifier la dépense. Veuillez réessayer plus tard.",
+            error: "Impossible de modifier l'activité. Veuillez réessayer plus tard.",
         };
     }
 }
 
-export const deleteExpense = async (travelId: string, expenseId: string) => {
+export const deleteActivity = async (travelId: string, activityId: string) => {
     try {
         const session = await getServerSession(authOptions);
 
@@ -338,36 +272,36 @@ export const deleteExpense = async (travelId: string, expenseId: string) => {
 
         if (!isParticipant && !isOwner) {
             return {
-                error: "Vous n'avez pas l'autorisation d'ajouter une dépense à ce voyage.",
+                error: "Vous n'avez pas l'autorisation de supprimer une activité de ce voyage.",
             };
         }
 
-        const expense = await prisma.expense.findUnique({
-            where: { id: expenseId },
+        const activity = await prisma.activity.findUnique({
+            where: { id: activityId },
         });
 
-        if (!expense || expense.travelId !== travelId) {
+        if (!activity || activity.travelId !== travelId) {
             return {
-                error: "La dépense que vous tentez de supprimer n'existe pas.",
+                error: "L'activité que vous tentez de supprimer n'existe pas.",
             };
         }
 
-        await prisma.expense.delete({
-            where: { id: expenseId }
+        await prisma.activity.delete({
+            where: { id: activityId }
         });
 
         await pusherServer.trigger(
             `travel-${travel.id}`,
-            "travel:delete-expense",
+            "travel:delete-activity",
             null
         );
 
         return {
-            data: "La dépense a été supprimé avec succès.",
+            data: "L'activité a été supprimée avec succès.",
         };
     } catch (error) {
         return {
-            error: "Impossible de supprimer la dépense. Veuillez réessayer plus tard.",
+            error: "Impossible de supprimer l'activité. Veuillez réessayer plus tard.",
         };
     }
 }
