@@ -1,7 +1,7 @@
 import { ExpenseCategory } from "@prisma/client"
 import { clsx, type ClassValue } from "clsx"
 import { isBefore, isSameDay } from "date-fns"
-import { Bed, Utensils, Ticket, Bus, MoreHorizontal, LayoutGrid, Plane } from "lucide-react"
+import { Bed, Utensils, Ticket, Bus, MoreHorizontal, LayoutGrid, Plane, DollarSign } from "lucide-react"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -22,6 +22,12 @@ export function getMenuList(pathname: string): IMenu[] {
 			icon: Plane,
 			active: pathname.includes('/travels'),
 		},
+		{
+			href: '/bank-accounts',
+			label: 'Comptes bancaires',
+			icon: DollarSign,
+			active: pathname.includes('bank-accounts'),
+		}
 	]
 }
 
