@@ -17,6 +17,8 @@ model User {
   accounts            Account[]
   travels             Travel[]
   participatedTravels Participant[]
+  polls               Poll[]
+  votes               Vote[]
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 }
@@ -51,6 +53,7 @@ model Travel {
   expenses     Expense[]
   activities   Activity[]
   documents    Document[]
+  polls        Poll[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }
@@ -108,4 +111,37 @@ model Document {
   travel      Travel   @relation(fields: [travelId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Poll {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  pollOptions PollOption[]
+  travelId    String
+  travel      Travel       @relation(fields: [travelId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model PollOption {
+  id        String   @id @default(cuid())
+  text      String
+  votes     Vote[]
+  pollId    String
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updated   DateTime @updatedAt
+}
+
+model Vote {
+  id           String     @id @default(cuid())
+  pollOptionId String
+  pollOption   PollOption @relation(fields: [pollOptionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }

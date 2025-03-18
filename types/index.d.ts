@@ -75,3 +75,36 @@ declare interface IDocument {
 declare interface DocumentsFilters {
     title: string;
 }
+
+declare interface IPoll {
+    id: string;
+    title: string;
+    description?: string;
+    pollOptions: IPollOption[];
+    travelId: string;
+    travel: ITravel;
+    userId: string;
+    user: IUser;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+declare interface IPollOption {
+    id: string;
+    text: string;
+    votes: IVote[];
+    pollId: string;
+    poll: IPoll;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+declare interface IVote {
+    id: string;
+    pollOptionId: string;
+    pollOption: IPollOption;
+    userId: string;
+    user: IUser;
+    createdAt: Date;
+    updatedAt: Date;
+}
