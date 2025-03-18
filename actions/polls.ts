@@ -147,3 +147,121 @@ export const addPoll = async (travelId: string, values: any) => {
         };
     }
 }
+
+export const votePoll = async (pollOptionId: string) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const pollOption = await prisma.pollOption.findUnique({
+            where: { id: pollOptionId },
+            include: { poll: true },
+        });
+
+        if (!pollOption) {
+            return {
+                error: "L'option de sondage spécifié n'existe pas.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: pollOption.poll.travelId },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                            }
+                        }
+                    }
+                }
+            }
+        });
+      
+        if (!travel) {
+            return {
+                error: "Le voyage associé à ce sondage n'existe pas.",
+            };
+        }
+      
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
+      
+        if (!isParticipant && !isOwner) {
+            return {
+                error: "Vous n'avez pas l'autorisation de voter à ce sondage.",
+            };
+        }
+
+        const existingVote = await prisma.vote.findFirst({
+            where: {
+                userId: session.user.id,
+                pollOption: {
+                    pollId: pollOption.pollId,
+                }
+            }
+        });
+
+        if (existingVote) {
+            
+            const updatedVote = await prisma.vote.update({
+                where: { id: existingVote.id },
+                data: { pollOptionId },
+                include: {
+                    user: true,
+                    pollOption: {
+                        include: {
+                            poll: true
+                        }
+                    }
+                }
+            });
+
+
+            await pusherServer.trigger(
+                `travel-${travel.id}`,
+                "travel:vote-updated",
+                updatedVote,
+            );
+      
+            return {
+                data: updatedVote,
+            };
+        } else {
+            const newVote = await prisma.vote.create({
+                data: {
+                    pollOptionId,
+                    userId: session.user.id,
+                },
+                include: {
+                    user: true,
+                    pollOption: {
+                        include: {
+                            poll: true
+                        }
+                    }
+                }
+            });
+      
+            await pusherServer.trigger(
+                `travel-${travel.id}`,
+                "travel:new-vote",
+                newVote,
+            );
+      
+            return {
+              data: newVote,
+            };
+        }
+    } catch (error) {
+        return {
+            error: "Impossible de voter pour ce sondage. Veuillez réessayer.",
+        };
+    }
+}

@@ -1,12 +1,14 @@
+import { votePoll } from "@/actions/polls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Check, ChevronDown, ChevronUp, Users } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { Check, ChevronDown, ChevronUp, Loader2, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 const TravelPollCollapsible = ({ poll }: { poll: IPoll }) => {
     const { data: session } = useSession();
@@ -14,7 +16,9 @@ const TravelPollCollapsible = ({ poll }: { poll: IPoll }) => {
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
     const [selectedOption, setSelectedOption] = useState<string>("");
     const [showVoters, setShowVoters] = useState<boolean>(false);
-    const { id, title, description, hasVoted, pollOptions } = poll;
+    const { id, title, description, pollOptions } = poll;
+
+    const [isPending, startTransition] = useTransition();
 
     const getTotalVotes = () => {
         return pollOptions.reduce((sum, option) => sum + option.votes.length, 0)
@@ -39,13 +43,35 @@ const TravelPollCollapsible = ({ poll }: { poll: IPoll }) => {
         return null;
     }
 
+    const hasVoted = getUserVote() !== null;
     const userVote = getUserVote();
+
+    const handleVote = async () => {
+        if (!selectedOption) return;
+
+        startTransition(async () => {
+            const result = await votePoll(selectedOption);
+
+            if (result.error) {
+                toast({
+                    variant: "destructive",
+                    title: "Oups !",
+                    description: result.error,
+                });
+            } else {
+                toast({
+                    title: "Vote réussi !",
+                    description: "Votre vote a été enregistré avec succès.",
+                });
+            }
+        });
+    }
 
     return (
         <Collapsible
             open={isExpanded}
             onOpenChange={() => setIsExpanded(!isExpanded)}
-            className="border rounded-lg"
+            className="border rounded-lg h-fit"
         >
             <CollapsibleTrigger asChild>
                 <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50">
@@ -90,10 +116,16 @@ const TravelPollCollapsible = ({ poll }: { poll: IPoll }) => {
                                 ))}
                             </RadioGroup>
                             <Button
-                                disabled={!selectedOption}
+                                onClick={handleVote}
+                                disabled={!selectedOption || isPending}
                                 className="w-full"
                             >
-                                Voter
+                                {isPending ? (
+                                    <>
+                                        <Loader2 size={20} className="animate-spin" /> &nbsp;
+                                        Chargement...
+                                    </>
+                                ) : "Voter"}
                             </Button>
                         </div>
                     ) : (
@@ -101,7 +133,7 @@ const TravelPollCollapsible = ({ poll }: { poll: IPoll }) => {
                             {pollOptions.map((option) => {
                                 const totalVotes = getTotalVotes();
                                 const percentage = totalVotes > 0
-                                    ? Math.round((option.votes.length) / totalVotes) * 100
+                                    ? option.votes.length / totalVotes * 100
                                     : 0;
                                 const isUserVote = userVote === option.id;
 
@@ -124,7 +156,7 @@ const TravelPollCollapsible = ({ poll }: { poll: IPoll }) => {
                                                 className={`h-2 ${isUserVote ? "bg-primary/20" : ""}`} 
                                             />
                                             {showVoters && option.votes.length > 0 && (
-                                                <div className="mt-2 flex -space-x-2 overflow-hidden">
+                                                <div className="mt-2 flex space-x-2 overflow-hidden">
                                                     {option.votes.map((vote) => (
                                                         <Badge key={vote.id} variant="outline">
                                                             {vote.user.name}
