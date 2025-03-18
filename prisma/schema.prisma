@@ -117,6 +117,7 @@ model Poll {
   id          String       @id @default(cuid())
   title       String
   description String?
+  hasVoted    Boolean      @default(false)
   pollOptions PollOption[]
   travelId    String
   travel      Travel       @relation(fields: [travelId], references: [id], onDelete: Cascade)
