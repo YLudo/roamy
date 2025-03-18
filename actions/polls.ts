@@ -209,7 +209,8 @@ export const votePoll = async (pollOptionId: string) => {
         });
 
         if (existingVote) {
-            
+            console.log("ICI")
+            console.log(pollOptionId)
             const updatedVote = await prisma.vote.update({
                 where: { id: existingVote.id },
                 data: { pollOptionId },

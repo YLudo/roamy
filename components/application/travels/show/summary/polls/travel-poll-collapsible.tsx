@@ -14,8 +14,10 @@ const TravelPollCollapsible = ({ poll }: { poll: IPoll }) => {
     const { data: session } = useSession();
 
     const [isExpanded, setIsExpanded] = useState<boolean>(false);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
     const [selectedOption, setSelectedOption] = useState<string>("");
     const [showVoters, setShowVoters] = useState<boolean>(false);
+
     const { id, title, description, pollOptions } = poll;
 
     const [isPending, startTransition] = useTransition();
@@ -59,6 +61,7 @@ const TravelPollCollapsible = ({ poll }: { poll: IPoll }) => {
                     description: result.error,
                 });
             } else {
+                setIsEditing(false);
                 toast({
                     title: "Vote réussi !",
                     description: "Votre vote a été enregistré avec succès.",
@@ -100,7 +103,7 @@ const TravelPollCollapsible = ({ poll }: { poll: IPoll }) => {
                         <p className="text-sm text-muted-foreground mb-4">{description}</p>
                     }
 
-                    {!hasVoted ? (
+                    {(!hasVoted || isEditing) ? (
                         <div className="space-y-4">
                             <RadioGroup
                                 value={selectedOption}
@@ -133,7 +136,7 @@ const TravelPollCollapsible = ({ poll }: { poll: IPoll }) => {
                             {pollOptions.map((option) => {
                                 const totalVotes = getTotalVotes();
                                 const percentage = totalVotes > 0
-                                    ? option.votes.length / totalVotes * 100
+                                    ? Math.round((option.votes.length / totalVotes) * 100)
                                     : 0;
                                 const isUserVote = userVote === option.id;
 
@@ -168,15 +171,28 @@ const TravelPollCollapsible = ({ poll }: { poll: IPoll }) => {
                                     </div>
                                 );
                             })}
-                            <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setShowVoters(!showVoters)}
-                                className="w-full"
-                            >
-                                <Users className="mr-2 h-4 w-4" />
-                                {showVoters ? "Masquer" : "Voir"} les votants
-                            </Button>
+                            <div className="space-y-2">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => setShowVoters(!showVoters)}
+                                    className="w-full"
+                                >
+                                    <Users className="mr-2 h-4 w-4" />
+                                    {showVoters ? "Masquer" : "Voir"} les votants
+                                </Button>
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => {
+                                        setSelectedOption(userVote || "");
+                                        setIsEditing(true);
+                                    }}
+                                    className="w-full"
+                                >
+                                    Modifier mon vote
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </div>

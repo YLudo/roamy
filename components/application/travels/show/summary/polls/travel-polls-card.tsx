@@ -39,10 +39,12 @@ const TravelPollsCard = ({ travelId }: { travelId: string }) => {
 
         channel.bind("travel:new-poll", () => fetchPolls());
         channel.bind("travel:new-vote", () => fetchPolls());
+        channel.bind("travel:vote-updated", () => fetchPolls());
 
         return () => {
             pusherClient.unbind("travel:new-poll");
             pusherClient.unbind("travel:new-vote");
+            pusherClient.unbind("travel:vote-updated");
             pusherClient.unsubscribe(channelName);
         }
     }, [fetchPolls, travelId]);
