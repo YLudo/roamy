@@ -79,12 +79,13 @@ declare interface DocumentsFilters {
 declare interface IPoll {
     id: string;
     title: string;
-    description?: string;
+    description?: string | null;
+    hasVoted: boolean;
     pollOptions: IPollOption[];
     travelId: string;
-    travel: ITravel;
+    travel?: ITravel;
     userId: string;
-    user: IUser;
+    user?: IUser;
     createdAt: Date;
     updatedAt: Date;
 }
