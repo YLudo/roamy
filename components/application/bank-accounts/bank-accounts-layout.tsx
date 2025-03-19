@@ -1,5 +1,6 @@
 import BankAccountsBalance from "./bank-accounts-balance";
 import BankAccountsHeader from "./bank-accounts-header";
+import BankAccountsHistory from "./bank-accounts-history";
 import BankAccountsInformations from "./bank-accounts-informations";
 
 const BankAccountsLayout = () => {
@@ -12,7 +13,7 @@ const BankAccountsLayout = () => {
                     <BankAccountsBalance />
                 </div>
                 <div className="lg:col-span-2">
-
+                    <BankAccountsHistory />
                 </div>
             </div>
         </section>
