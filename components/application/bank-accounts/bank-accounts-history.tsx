@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BankAccountsTransactionsTable from "./bank-accounts-transactions-table";
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { getUserTransactions } from "@/actions/plaid";
 import { toast } from "@/hooks/use-toast";
 import { useSession } from "next-auth/react";
@@ -13,7 +13,7 @@ const BankAccountsHistory = () => {
     const [transactions, setTransactions] = useState<IPlaidTransaction[]>([]);
     const [isPending, startTransition] = useTransition();
 
-    const fetchTransactions = () => {
+    const fetchTransactions = useCallback(() => {
         startTransition(async () => {
             const result = await getUserTransactions();
 
@@ -27,20 +27,20 @@ const BankAccountsHistory = () => {
                 setTransactions(result.data);
             }
         });
-    }
+    }, []);
 
     useEffect(() => {
         if (!session?.user?.id) return;
-            const channelName = `user-${session.user.id}`;
-            const channel = pusherClient.subscribe(channelName);
-    
-            channel.bind("bank:new", () => fetchTransactions());
-    
-            return () => {
-                pusherClient.unbind("bank:new");
-                pusherClient.unsubscribe(channelName);
-            };
-    }, [])
+        const channelName = `user-${session.user.id}`;
+        const channel = pusherClient.subscribe(channelName);
+
+        channel.bind("bank:new", () => fetchTransactions());
+
+        return () => {
+            pusherClient.unbind("bank:new");
+            pusherClient.unsubscribe(channelName);
+        };
+    }, [fetchTransactions, session?.user.id])
 
     useEffect(() => {
         fetchTransactions();

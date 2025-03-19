@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import BankAccountsBalance from "./bank-accounts-balance";
 import BankAccountsHeader from "./bank-accounts-header";
 import BankAccountsHistory from "./bank-accounts-history";
@@ -16,7 +16,7 @@ const BankAccountsLayout = () => {
     const [accounts, setAccounts] = useState<IPlaidAccount[]>([]);
     const [isPending, startTransition] = useTransition();
 
-    const fetchAccounts = () => {
+    const fetchAccounts = useCallback(() => {
         startTransition(async () => {
             const result = await getUserBankAccounts();
 
@@ -34,20 +34,20 @@ const BankAccountsLayout = () => {
                 setAccounts(mappedAccounts);
             }
         });
-    };
+    }, []);
 
     useEffect(() => {
         if (!session?.user?.id) return;
-            const channelName = `user-${session.user.id}`;
-            const channel = pusherClient.subscribe(channelName);
-    
-            channel.bind("bank:new", () => fetchAccounts());
-    
-            return () => {
-                pusherClient.unbind("bank:new");
-                pusherClient.unsubscribe(channelName);
-            };
-    }, [])
+        const channelName = `user-${session.user.id}`;
+        const channel = pusherClient.subscribe(channelName);
+
+        channel.bind("bank:new", () => fetchAccounts());
+
+        return () => {
+            pusherClient.unbind("bank:new");
+            pusherClient.unsubscribe(channelName);
+        };
+    }, [fetchAccounts, session?.user.id])
 
     useEffect(() => {
         fetchAccounts();
