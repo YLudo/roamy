@@ -1,45 +1,40 @@
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 
-const BankAccountsTransactionsTable = () => {
-    const transactions = [
-        {
-            name: "Réservation Hôtel Mercure Paris",
-            amount: "189,50 €",
-            isCredit: false,
-            status: "Validé",
-            date: "15/03/2025",
-        },
-        {
-            name: "Billets d'avion Air France",
-            amount: "356,80 €",
-            isCredit: false,
-            status: "Validé",
-            date: "10/03/2025",
-        },
-        {
-            name: "Restaurant Le Petit Bistro",
-            amount: "78,25 €",
-            isCredit: false,
-            status: "En attente",
-            date: "18/03/2025",
-        },
-        {
-            name: "Remboursement Thomas",
-            amount: "45,00 €",
-            isCredit: true,
-            status: "Validé",
-            date: "12/03/2025",
-        },
-        {
-            name: "Location voiture Europcar",
-            amount: "120,75 €",
-            isCredit: false,
-            status: "Validé",
-            date: "16/03/2025",
-        },
-    ]
+interface BankAccountsTransactionsTableProps {
+    transactions: IPlaidTransaction[];
+    isLoading: boolean;
+}
+
+const BankAccountsTransactionsTable = ({ transactions, isLoading }: BankAccountsTransactionsTableProps) => {
+    const formatDate = (date: Date) => {
+        return new Intl.DateTimeFormat('fr-FR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }).format(new Date(date));
+    };
+
+    const formatAmount = (amount: number, currency: string) => {
+        return new Intl.NumberFormat('fr-FR', {
+            style: 'currency',
+            currency: currency || 'EUR'
+        }).format(Math.abs(amount));
+    };
+
+    if (isLoading) {
+        return <Skeleton className="w-full h-[300px] rounded-xl" />
+    }
+
+    if (transactions.length <= 0) {
+        return (
+            <div className="lg:col-span-2 mt-4 h-fit text-center py-8 bg-muted rounded-lg">
+                <p className="text-muted-foreground">Aucune transactions disponible !</p>
+            </div>
+        );
+    }
 
     return (
         <Table>
@@ -52,32 +47,32 @@ const BankAccountsTransactionsTable = () => {
                     </TableRow>
             </TableHeader>
             <TableBody>
-                {transactions.map((transaction, index) => (
-                    <TableRow key={index} className="hover:bg-muted/50">
+                {transactions.map((transaction) => (
+                    <TableRow key={transaction.id} className="hover:bg-muted/50">
                         <TableCell className="max-w-[250px]">
-                            <div className="font-medium truncate">{transaction.name}</div>
+                            <div className="font-medium truncate">{transaction.merchantName || transaction.name}</div>
                         </TableCell>
                         <TableCell>
                             <div className="flex items-center gap-1.5">
-                                {transaction.isCredit ? (
+                                {transaction.amount < 0 ? (
                                     <ArrowUpIcon className="w-3.5 h-3.5 text-green-500" />
                                 ) : (
                                     <ArrowDownIcon className="w-3.5 h-3.5 text-red-500" />
                                 )}
-                                <span className={`font-medium ${transaction.isCredit ? "text-green-500" : "text-red-500"}`}>
-                                    {transaction.isCredit ? transaction.amount : `-${transaction.amount}`}
+                                <span className={`font-medium ${transaction.amount < 0 ? "text-green-500" : "text-red-500"}`}>
+                                    {formatAmount(transaction.amount, transaction.isoCurrencyCode)}
                                 </span>
                             </div>
                         </TableCell>
                         <TableCell>
                             <Badge
-                                variant={transaction.status === "Validé" ? "default" : "secondary"}
-                                className={transaction.status === "Validé" ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
+                                variant={transaction.pending ? "secondary" : "default"}
+                                className={!transaction.pending ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
                             >
-                                {transaction.status}
+                                {transaction.pending ? "En attente" : "Validé"}
                             </Badge>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{transaction.date}</TableCell>
+                        <TableCell className="text-muted-foreground">{formatDate(transaction.date)}</TableCell>
                     </TableRow>
                 ))}
             </TableBody>

@@ -18,7 +18,6 @@ const TravelExpensesFilters = ({ filters, setFilters }: TravelExpensesFiltersPro
     };
 
     const handleDateChange = (val: ExpenseFilters["date"]) => {
-        console.log(val);
         setFilters((prev) => ({ ...prev, date: val }));
     };
     
