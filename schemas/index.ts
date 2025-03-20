@@ -133,3 +133,28 @@ export const PollSchema = z.object({
             message: "Un sondage doit avoir au moins 2 options.",
         }),
 })
+
+export const TransactionExpenseSchema = z.object({
+    title: z
+        .string()
+        .min(3, {
+            message: "Le titre de la dépense doit contenir au moins 3 caractères.",
+        }),
+    category: z
+        .enum(["ACCOMODATION", "MEAL", "ACTIVITY", "TRANSPORT", "OTHER"], {
+            message: "Vous devez spécifier une catégorie valide.",
+        }),
+    amount: z
+        .number({
+            message: "Vous devez spécifier un montant valide.",
+        })
+        .positive("Vous devez spécifier un montant positif."),
+    date: z
+        .date()
+        .optional(),
+    travelId: z
+        .string()
+        .min(3, {
+            message: "Vous devez spécifier un voyage."
+        })
+});

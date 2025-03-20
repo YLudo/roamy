@@ -109,3 +109,52 @@ declare interface IVote {
     createdAt: Date;
     updatedAt: Date;
 }
+
+declare interface IPlaidItem {
+    id: string;
+    userId: string;
+    accessToken: string;
+    itemId: string;
+    institutionId: string;
+    institutionName: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+declare interface IPlaidAccount {
+    id: string;
+    itemId: string;
+    accountId: string;
+    name: string;
+    mask: string;
+    type: string;
+    subtype: string;
+    balanceAvailable: number;
+    balanceCurrent: number;
+    isCurrencyCode: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+declare interface IPlaidTransaction {
+    id: string;
+    accountId: string;
+    transactionId: string;
+    amount: number;
+    date: Date;
+    name: string;
+    merchantName: string | null;
+    category: string[];
+    location: {
+        address?: string;
+        city?: string;
+        country?: string;
+        postalCode?: string;
+        region?: string;
+    } | null;
+    paymentChannel: string;
+    isoCurrencyCode: string;
+    pending: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+}
