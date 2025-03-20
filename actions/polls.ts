@@ -264,3 +264,74 @@ export const votePoll = async (pollOptionId: string) => {
         };
     }
 }
+
+export const deletePoll = async (travelId: string, pollId: string) => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const travel = await prisma.travel.findUnique({
+            where: { id: travelId },
+            include: {
+                participants: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                            }
+                        }
+                    }
+                },
+            }
+        });
+
+        if (!travel) {
+            return {
+                error: "Le voyage que vous tentez de consulter n'existe pas.",
+            };
+        }
+
+        const isOwner = travel.userId === session.user.id;
+        const isParticipant = travel.participants.some(participant => participant.user.id === session.user.id);
+
+        if (!isParticipant && !isOwner) {
+            return {
+                error: "Vous n'avez pas l'autorisation de supprimer une activité de ce voyage.",
+            };
+        }
+
+        const poll = await prisma.poll.findUnique({
+            where: { id: pollId },
+        });
+
+        if (!poll || poll.travelId !== travelId) {
+            return {
+                error: "Le sondage que vous tentez de supprimer n'existe pas.",
+            };
+        }
+
+        await prisma.poll.delete({
+            where: { id: pollId },
+        });
+
+        await pusherServer.trigger(
+            `travel-${travel.id}`,
+            "travel:delete-poll",
+            null
+        );
+
+        return {
+            data: "Le sondage a été supprimé avec succès.",
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de supprimer le sondage. Veuillez réessayer plus tard.",
+        };
+    }
+}
