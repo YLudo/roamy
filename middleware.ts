@@ -5,7 +5,7 @@ export async function middleware(request: NextRequest) {
     const token = await getToken({ req: request });
     const path = request.nextUrl.pathname;
 
-    const isPublicPath = path === "/login" || path === "/register";
+    const isPublicPath = path === "/login" || path === "/register" || path.includes("/activate");
 
     if (isPublicPath && token) {
         return NextResponse.redirect(new URL("/", request.url));
