@@ -30,6 +30,10 @@ export const authOptions: NextAuthOptions = {
                 if (!user) {
                     throw new Error("Aucun compte trouvé avec cet email");
                 }
+
+                if (!user.emailVerified) {
+                    throw new Error("Veuillez vérifier votre adresse-email.");
+                }
         
                 if (!user.password) {
                     throw new Error("Problème de compte. Contactez le support.");
