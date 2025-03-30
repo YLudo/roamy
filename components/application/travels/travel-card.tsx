@@ -52,7 +52,7 @@ const TravelCard = ({ travel, showActions }: TravelCardProps) => {
         <>
             <Card>
                 <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-center">
                         <CardTitle className="text-xl font-semibold">{title}</CardTitle>
                         <Badge variant={statusColor} className="text-xs px-2 py-1">{statusLabel}</Badge>
                     </div>

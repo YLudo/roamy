@@ -1,7 +1,7 @@
 import Footer from "@/components/layout/footer";
 import Navbar from "@/components/layout/navbar";
 
-export default function DashboardLayout({
+export default function ApplicationLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
