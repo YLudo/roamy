@@ -21,6 +21,8 @@ model User {
   votes               Vote[]
   plaidItems          PlaidItem[]
   activateTokens      ActivateToken[]
+  sentInvitations     Invitation[]    @relation("sentInvitations")
+  receivedInvitations Invitation[]    @relation("receivedInvitations")
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
 }
@@ -67,6 +69,7 @@ model Travel {
   activities   Activity[]
   documents    Document[]
   polls        Poll[]
+  invitations  Invitation[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }
@@ -206,4 +209,26 @@ model PlaidTransaction {
   account         PlaidAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
+}
+
+model Invitation {
+  id           String           @id @default(cuid())
+  status       InvitationStatus @default(PENDING)
+  expiresAt    DateTime
+  travelId     String
+  travel       Travel           @relation(fields: [travelId], references: [id], onDelete: Cascade)
+  inviterId    String
+  inviter      User             @relation("sentInvitations", fields: [inviterId], references: [id])
+  inviteeEmail String
+  inviteeId    String?
+  invitee      User?            @relation("receivedInvitations", fields: [inviteeId], references: [id])
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
 }
