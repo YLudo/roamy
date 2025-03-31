@@ -158,3 +158,18 @@ declare interface IPlaidTransaction {
     createdAt: Date;
     updatedAt: Date;
 }
+
+declare interface IInvitation {
+    id: string;
+    status: "PENDING" | "ACCEPTED" | "DECLINED" | "EXPIRED";
+    expiresAt: Date;
+    travelId: string;
+    travel?: ITravel;
+    inviterId: string;
+    inviter?: IUser;
+    inviteeEmail: string;
+    inviteeId?: string | null;
+    invitee?: IUser;
+    createdAt: Date;
+    updatedAt: Date;
+}

@@ -311,12 +311,18 @@ export const inviteParticipant = async (travelId: string, participantEmail: stri
             },
         });
 
+        await pusherServer.trigger(
+            `user-${session.user.id}`,
+            "invitation:new",
+            newInvitation,
+        );
+
         const templateData = {
             username: existingUser ? existingUser.name : "jeune aventurier(e)",
             inviter_name: session.user.name,
             destination: travel.title,
             dates: travel.startDate && travel.endDate ? `De ${new Date(travel.startDate).toLocaleDateString()} à ${new Date(travel.endDate).toLocaleDateString()}` : "Non spécifié",
-            link: "",
+            link: `${process.env.NEXTAUTH_URL}`,
         };
 
         const messageData = {
@@ -335,6 +341,37 @@ export const inviteParticipant = async (travelId: string, participantEmail: stri
     } catch (error) {
         return {
             error: "Impossible d'envoyer l'invitation. Veuillez réessayer plus tard.",
+        };
+    }
+}
+
+export const getInvitations = async () => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id || !session.user.email) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const invitations = await prisma.invitation.findMany({
+            where: {
+                inviteeEmail: session.user.email,
+                status: "PENDING",
+            },
+            include: {
+                inviter: true,
+                travel: true,
+            }
+        });
+
+        return {
+            data: invitations,
+        };
+    } catch (error) {
+        return {
+            error: "Impossible de récupérer les invitations. Veuillez réessayer.",
         };
     }
 }
