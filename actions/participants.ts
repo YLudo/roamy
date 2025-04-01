@@ -10,98 +10,6 @@ import formData from "form-data";
 const mailgun = new Mailgun(formData);
 const mg = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY! });
 
-export const addParticipant = async (travelId: string, participantName: string) => {
-    try {
-        const session = await getServerSession(authOptions);
-
-        if (!session || !session.user.id) {
-            return {
-                error: "Votre session a expiré. Veuillez vous reconnecter.",
-            };
-        }
-
-        const travel = await prisma.travel.findUnique({
-            where: { id: travelId },
-            include: { participants: true },
-        });
-
-        if (!travel) {
-            return {
-                error: "Le voyage que vous tentez de rejoindre n'existe pas.",
-            };
-        }
-
-        if (travel.userId !== session.user.id) {
-            return {
-                error: "Vous n'avez pas l'autorisation d'ajouter des participants à ce voyage.",
-            };
-        }
-
-        const participant = await prisma.user.findUnique({
-            where: { name: participantName },
-        });
-
-        if (!participant) {
-            return {
-                error: "L'utilisateur avec ce nom n'existe pas.",
-            };
-        }
-
-        if (participant.name === session.user.name) {
-            return {
-                error: "Vous ne pouvez pas vous ajouter vous-même au voyage.",
-            };
-        }
-
-        const existingParticipant = await prisma.participant.findUnique({
-            where: {
-                userId_travelId: {
-                    userId: participant.id,
-                    travelId: travelId,
-                },
-            },
-        });
-
-        if (existingParticipant) {
-            return {
-                error: "Cet utilisateur est déjà un participant à ce voyage.",
-            };
-        }
-
-        const newParticipant = await prisma.participant.create({
-            data: {
-                userId: participant.id,
-                travelId: travelId,
-            },
-        });
-
-        await pusherServer.trigger(
-            `travel-${travel.id}`,
-            "travel:new-participant",
-            newParticipant,
-        );
-
-        const participants = [...travel.participants.map(p => p.userId), participant.id];
-        await Promise.all(
-            participants.map(async (participant) => {
-                await pusherServer.trigger(
-                    `user-${participant}`,
-                    "travels:update-list",
-                    newParticipant
-                );
-            })
-        );
-
-        return {
-            data: newParticipant,
-        };
-    } catch (error) {
-        return {
-            error: "Impossible d'ajouter le participant. Veuillez réessayer plus tard.",
-        };
-    }
-};
-
 export const getParticipants = async (travelId: string) => {
     try {
         const session = await getServerSession(authOptions);
@@ -157,6 +65,7 @@ export const getParticipants = async (travelId: string) => {
 }
 
 export const deleteParticipant = async (travelId: string, participantId: string) => {
+    console.log(participantId);
     try {
         const session = await getServerSession(authOptions);
 
@@ -210,7 +119,7 @@ export const deleteParticipant = async (travelId: string, participantId: string)
         await pusherServer.trigger(
             `travel-${travelId}`,
             "travel:delete-participant",
-            null
+            participantId
         );
 
         return {
@@ -309,13 +218,19 @@ export const inviteParticipant = async (travelId: string, participantEmail: stri
                 status: "PENDING",
                 expiresAt,
             },
+            include: {
+                travel: true,
+                inviter: true,
+            }
         });
 
-        await pusherServer.trigger(
-            `user-${session.user.id}`,
-            "invitations:new",
-            newInvitation,
-        );
+        if (existingUser) {
+            await pusherServer.trigger(
+                `user-${existingUser.id}`,
+                "invitations:new",
+                newInvitation,
+            );
+        }
 
         const templateData = {
             username: existingUser ? existingUser.name : "jeune aventurier(e)",
@@ -412,19 +327,31 @@ export const respondToInvitation = async (invitationId: string, status: "ACCEPTE
             });
 
             if (status === "ACCEPTED") {
-                await tx.participant.create({
+                const newParticipant = await tx.participant.create({
                     data: {
                         userId: session.user.id!,
                         travelId: invitation.travelId,
                     },
+                    include: {
+                        user: true,
+                    }
                 });
+
+                await pusherServer.trigger(
+                    `travel-${invitation.travelId}`,
+                    "travel:new-participant",
+                    {
+                        id: newParticipant.userId,
+                        name: newParticipant.user.name,
+                    }
+                )
             }
         });
 
         await pusherServer.trigger(
             `user-${session.user.id}`,
             "invitations:respond",
-            null,
+            invitationId,
         );
 
         return {

@@ -49,13 +49,9 @@ const TravelShowLayout = ({ travelId }: { travelId: string }) => {
         };
 
         channel.bind("travel:update", handleUpdate);
-        channel.bind("travel:new-participant", handleUpdate);
-        channel.bind("travel:delete-participant", handleUpdate);
 
         return () => {
             pusherClient.unbind("travel:update");
-            pusherClient.unbind("travel:new-participant");
-            pusherClient.unbind("travel:delete-participant");
             pusherClient.unsubscribe(channelName);
         }
     }, [fetchTravel, router, travel.id])

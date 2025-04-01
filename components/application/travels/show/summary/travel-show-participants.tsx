@@ -1,6 +1,6 @@
 "use client";
 
-import { addParticipant, deleteParticipant, getParticipants, inviteParticipant } from "@/actions/participants";
+import { deleteParticipant, getParticipants, inviteParticipant } from "@/actions/participants";
 import DeletionModal from "@/components/application/deletion-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,8 +44,13 @@ const TravelShowParticipants = ({ travelId }: { travelId: string }) => {
         const channelName = `travel-${travelId}`;
         const channel = pusherClient.subscribe(channelName);
     
-        channel.bind("travel:new-participant", () => fetchParticipants());
-        channel.bind("travel:delete-participant", () => fetchParticipants());
+        channel.bind("travel:new-participant", (participant: { id: string, name: string }) => {
+            setParticipants((prev) => prev.find((p) => p.id === participant.id) ? prev : [...prev, participant]);
+        });
+
+        channel.bind("travel:delete-participant", (participantId: string) => {
+            setParticipants((prev) => prev.filter((participant) => participant.id !== participantId));
+        });
     
         return () => {
             pusherClient.unbind("travel:delete-participant");
