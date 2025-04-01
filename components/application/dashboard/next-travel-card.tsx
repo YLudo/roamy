@@ -23,7 +23,7 @@ const NextTravelCard = () => {
             if (result.error) {
                 toast({
                     variant: "destructive",
-                    title: "",
+                    title: "Oups !",
                     description: result.error,
                 });
             } else if (result.data) {

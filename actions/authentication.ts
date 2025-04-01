@@ -64,7 +64,7 @@ export const register = async (values: any) => {
     };
 
     const messageData = {
-        from: "Roamy <hello@roamy.fr",
+        from: "Roamy <hello@roamy.fr>",
         to: user.email,
         subject: "Bienvenue sur Roamy - Activez votre compte dès maintenant !",
         template: "Mail d'activation",

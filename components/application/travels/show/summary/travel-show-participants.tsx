@@ -1,6 +1,6 @@
 "use client";
 
-import { addParticipant, deleteParticipant, getParticipants } from "@/actions/participants";
+import { addParticipant, deleteParticipant, getParticipants, inviteParticipant } from "@/actions/participants";
 import DeletionModal from "@/components/application/deletion-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -56,18 +56,18 @@ const TravelShowParticipants = ({ travelId }: { travelId: string }) => {
 
     const handleAddParticipant = async () => {
         startTransition(async () => {
-            const result = await addParticipant(travelId, newParticipant);
+            const result = await inviteParticipant(travelId, newParticipant);
 
             if (result.error) {
                 toast({
                     variant: "destructive",
-                    title: "Ajout du participant échoué !",
+                    title: "Invitation du participant échoué !",
                     description: result.error,
                 });
             } else if (result.data) {
                 toast({
-                    title: "Ajout du participant réussi !",
-                    description: "La participant a été ajouté avec succès.",
+                    title: "Invitation du participant réussi !",
+                    description: "La participant a été invité avec succès.",
                 });
                 setNewParticipant("");
             }
@@ -125,7 +125,7 @@ const TravelShowParticipants = ({ travelId }: { travelId: string }) => {
                     <div className="flex items-center gap-4">
                         <Input
                             type="text"
-                            placeholder="Nom du participant"
+                            placeholder="Adresse e-mail du participant"
                             value={newParticipant}
                             onChange={(e) => setNewParticipant(e.target.value)}
                         />
