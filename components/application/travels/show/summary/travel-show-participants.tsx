@@ -1,6 +1,6 @@
 "use client";
 
-import { addParticipant, deleteParticipant, getParticipants, inviteParticipant } from "@/actions/participants";
+import { deleteParticipant, getParticipants, inviteParticipant } from "@/actions/participants";
 import DeletionModal from "@/components/application/deletion-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
