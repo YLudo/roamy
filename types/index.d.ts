@@ -17,9 +17,11 @@ declare interface ITravel {
 }
 
 declare interface IParticipant {
+    user: any;
     id: string;
     userId: string;
     travelId: string;
+    user: IUser;
 }
 
 declare interface TravelFilters {

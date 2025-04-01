@@ -65,6 +65,7 @@ export const getParticipants = async (travelId: string) => {
 }
 
 export const deleteParticipant = async (travelId: string, participantId: string) => {
+    console.log(participantId);
     try {
         const session = await getServerSession(authOptions);
 
@@ -118,7 +119,7 @@ export const deleteParticipant = async (travelId: string, participantId: string)
         await pusherServer.trigger(
             `travel-${travelId}`,
             "travel:delete-participant",
-            null
+            participantId
         );
 
         return {
@@ -326,12 +327,24 @@ export const respondToInvitation = async (invitationId: string, status: "ACCEPTE
             });
 
             if (status === "ACCEPTED") {
-                await tx.participant.create({
+                const newParticipant = await tx.participant.create({
                     data: {
                         userId: session.user.id!,
                         travelId: invitation.travelId,
                     },
+                    include: {
+                        user: true,
+                    }
                 });
+
+                await pusherServer.trigger(
+                    `travel-${invitation.travelId}`,
+                    "travel:new-participant",
+                    {
+                        id: newParticipant.userId,
+                        name: newParticipant.user.name,
+                    }
+                )
             }
         });
 
