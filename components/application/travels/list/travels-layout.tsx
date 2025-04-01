@@ -8,14 +8,9 @@ import { toast } from "@/hooks/use-toast";
 import TravelsFilters from "./travels-filters";
 import { useSession } from "next-auth/react";
 import { pusherClient } from "@/lib/pusher";
-import { useTravelStore } from "@/stores/travel-store";
 
 const TravelsLayout = () => {
-    const {
-        travels,
-        updateTravels,
-    } = useTravelStore();
-
+    const [travels, setTravels] = useState<ITravel[]>([]);
     const [isPending, startTransition] = useTransition();
     const { data: session } = useSession();
 
@@ -38,10 +33,10 @@ const TravelsLayout = () => {
                     description: result.error,
                 });
             } else if (result.data) {
-                updateTravels(result.data);
+                setTravels(result.data);
             }
         })
-    }, [filters, updateTravels]);
+    }, [filters]);
 
     useEffect(() => {
         fetchTravels();
@@ -53,11 +48,16 @@ const TravelsLayout = () => {
         const channelName = `user-${session.user.id}`;
         const channel = pusherClient.subscribe(channelName);
 
-        channel.bind("travels:new", () => fetchTravels());
-        channel.bind("travels:update-list", () => fetchTravels());
+        const handleUpdate = () => {
+            fetchTravels();
+        };
+
+        channel.bind("travels:new", handleUpdate);
+        channel.bind("travels:update-list", handleUpdate);
 
         return () => {
-            pusherClient.unbind_all();
+            pusherClient.unbind("travels:update-list");
+            pusherClient.unbind("travels:new");
             pusherClient.unsubscribe(channelName);
         };
     }, [fetchTravels, session?.user?.id]);
