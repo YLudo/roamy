@@ -309,13 +309,19 @@ export const inviteParticipant = async (travelId: string, participantEmail: stri
                 status: "PENDING",
                 expiresAt,
             },
+            include: {
+                travel: true,
+                inviter: true,
+            }
         });
 
-        await pusherServer.trigger(
-            `user-${session.user.id}`,
-            "invitations:new",
-            newInvitation,
-        );
+        if (existingUser) {
+            await pusherServer.trigger(
+                `user-${existingUser.id}`,
+                "invitations:new",
+                newInvitation,
+            );
+        }
 
         const templateData = {
             username: existingUser ? existingUser.name : "jeune aventurier(e)",
@@ -424,7 +430,7 @@ export const respondToInvitation = async (invitationId: string, status: "ACCEPTE
         await pusherServer.trigger(
             `user-${session.user.id}`,
             "invitations:respond",
-            null,
+            invitationId,
         );
 
         return {

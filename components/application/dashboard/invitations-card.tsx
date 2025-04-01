@@ -60,8 +60,13 @@ const InvitationsCard = () => {
         const channelName = `user-${session.user.id}`;
         const channel = pusherClient.subscribe(channelName);
 
-        channel.bind("invitations:new", () => fetchInvitations());
-        channel.bind("invitations:respond", () => fetchInvitations());
+        channel.bind("invitations:new", (newInvitation: IInvitation) => {
+            setInvitations((prev) => [...prev, newInvitation]);
+        });
+
+        channel.bind("invitations:respond", (invitationId: string) => {
+            setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
+        });
 
         return () => {
             pusherClient.unbind("invitations:respond")
