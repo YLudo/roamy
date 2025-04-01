@@ -1,6 +1,6 @@
 "use client";
 
-import { getInvitations } from "@/actions/participants";
+import { getInvitations, respondToInvitation } from "@/actions/participants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +33,23 @@ const InvitationsCard = () => {
         })
     }, []);
 
+    const handleResponse = async (invitationId: string, status: "ACCEPTED" | "DECLINED") => {
+        const result = await respondToInvitation(invitationId, status);
+
+        if (result.error) {
+            toast({
+                variant: "destructive",
+                title: "Oups !",
+                description: result.error,
+            });
+        } else if (result.data) {
+            toast({
+                title: `Invitation ${status === "ACCEPTED" ? "accepté !" : "refusé"}`,
+                description: result.data,
+            });
+        }
+    }
+
     useEffect(() => {
         fetchInvitations();
     }, [fetchInvitations]);
@@ -44,8 +61,10 @@ const InvitationsCard = () => {
         const channel = pusherClient.subscribe(channelName);
 
         channel.bind("invitations:new", () => fetchInvitations());
+        channel.bind("invitations:respond", () => fetchInvitations());
 
         return () => {
+            pusherClient.unbind("invitations:respond")
             pusherClient.unbind("invitations:new");
             pusherClient.unsubscribe(channelName);
         };
@@ -89,12 +108,14 @@ const InvitationsCard = () => {
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
+                                                onClick={() => handleResponse(invitation.id, "DECLINED")}
                                             >
                                                 <X className="h-4 w-4" />
                                                 Refuser
                                             </Button>
                                             <Button
                                                 size="sm"
+                                                onClick={() => handleResponse(invitation.id, "ACCEPTED")}
                                             >
                                                 <Check className="h-4 w-4" />
                                                 Accepter

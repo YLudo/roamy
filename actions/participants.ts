@@ -313,7 +313,7 @@ export const inviteParticipant = async (travelId: string, participantEmail: stri
 
         await pusherServer.trigger(
             `user-${session.user.id}`,
-            "invitation:new",
+            "invitations:new",
             newInvitation,
         );
 
@@ -372,6 +372,67 @@ export const getInvitations = async () => {
     } catch (error) {
         return {
             error: "Impossible de récupérer les invitations. Veuillez réessayer.",
+        };
+    }
+}
+
+export const respondToInvitation = async (invitationId: string, status: "ACCEPTED" | "DECLINED") => {
+    try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || !session.user.id || !session.user.email) {
+            return {
+                error: "Votre session a expiré. Veuillez vous reconnecter.",
+            };
+        }
+
+        const invitation = await prisma.invitation.findUnique({
+            where: { id: invitationId },
+        });
+
+        if (!invitation) {
+            return {
+                error: "L'invitation que vous tentez de répondre n'existe pas.",
+            };
+        }
+
+        if (invitation.inviteeEmail !== session.user.email) {
+            return {
+                error: "Vous n'avez pas l'autorisation de répondre à cette invitation.",
+            };
+        }
+
+        await prisma.$transaction(async (tx) => {
+            await tx.invitation.update({
+                where: { id: invitationId },
+                data: {
+                    status,
+                    inviteeId: session.user.id,
+                }
+            });
+
+            if (status === "ACCEPTED") {
+                await tx.participant.create({
+                    data: {
+                        userId: session.user.id!,
+                        travelId: invitation.travelId,
+                    },
+                });
+            }
+        });
+
+        await pusherServer.trigger(
+            `user-${session.user.id}`,
+            "invitations:respond",
+            null,
+        );
+
+        return {
+            data: status === "ACCEPTED" ? "Vous avez accepté une invitation avec succès." : "Vous avez refusé une invitation avec succès.",
+        }
+    } catch (error) {
+        return {
+            error: "Impossible de répondre à cette invitation. Veuillez réessayer.",
         };
     }
 }
