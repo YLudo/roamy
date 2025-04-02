@@ -47,8 +47,18 @@ const TravelExpensesLayout = ({ travel }: { travel: ITravel }) => {
         const channel = pusherClient.subscribe(channelName);
             
         channel.bind("travel:new-expense", () => fetchExpenses());
-        channel.bind("travel:delete-expense", () => fetchExpenses());
-        channel.bind("travel:update-expense", () => fetchExpenses());
+        channel.bind("travel:delete-expense", (expense: IExpense) => {
+            setExpenses((prev) => prev.filter((e) => e.id !== expense.id));
+        });
+
+        channel.bind("travel:update-expense", (data: { expense: IExpense, updatedExpense: IExpense }) => {
+            setExpenses((prev) => prev.map(expense =>
+                expense.id === data.updatedExpense.id ? {
+                    ...data.updatedExpense,
+                    date: data.updatedExpense.date ? new Date(data.updatedExpense.date).toISOString() : null
+                } : expense
+            ));
+        });
             
         return () => {
             pusherClient.unbind("travel:update-expense");

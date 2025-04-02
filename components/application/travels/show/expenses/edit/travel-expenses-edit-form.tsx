@@ -53,6 +53,7 @@ const TravelExpensesEditForm = ({
                     description: "Votre dépense a été modifiée avec succès.",
                 });
                 form.reset();
+                setIsEditModalOpen(false);
             }
         })
     }

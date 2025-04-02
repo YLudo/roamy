@@ -222,7 +222,7 @@ export const updateActivity = async (travelId: string, activityId: string, value
         await pusherServer.trigger(
             `travel-${travelId}`,
             "travel:update-activity",
-            updatedActivity,
+            { activity, updatedActivity },
         );
 
         return {
@@ -293,7 +293,7 @@ export const deleteActivity = async (travelId: string, activityId: string) => {
         await pusherServer.trigger(
             `travel-${travel.id}`,
             "travel:delete-activity",
-            null
+            activity
         );
 
         return {

@@ -53,6 +53,7 @@ const TravelActivitiesEditForm = ({
                     description: "Votre activité a été modifiée avec succès.",
                 });
                 form.reset();
+                setIsEditModalOpen(false);
             }
         })
     }

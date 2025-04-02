@@ -44,11 +44,22 @@ const TravelShowLayout = ({ travelId }: { travelId: string }) => {
         const channelName = `travel-${travel.id}`;
         const channel = pusherClient.subscribe(channelName);
 
-        const handleUpdate = () => {
-            fetchTravel();
-        };
+        channel.bind("travel:update", () => fetchTravel());
+        channel.bind("travel:new-participant", (participant: IParticipant) => {
+            setTravel((prev) => ({
+                ...prev,
+                participants: prev.participants ? [...prev.participants, participant] : [participant],
+            }));
+        });
 
-        channel.bind("travel:update", handleUpdate);
+        channel.bind("travel:delete-participant", (participantId: string) => {
+            setTravel((prev) => ({
+                ...prev,
+                participants: prev.participants
+                    ? prev.participants.filter(p => p.userId !== participantId)
+                    : []
+            }));
+        });
 
         return () => {
             pusherClient.unbind("travel:update");

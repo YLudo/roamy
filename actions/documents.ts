@@ -215,7 +215,7 @@ export const updateDocument = async (travelId: string, documentId: string, value
         await pusherServer.trigger(
             `travel-${travelId}`,
             "travel:update-document",
-            updatedDocument,
+            { document, updatedDocument },
         );
 
         return {
@@ -286,7 +286,7 @@ export const deleteDocument = async (travelId: string, documentId: string) => {
         await pusherServer.trigger(
             `travel-${travel.id}`,
             "travel:delete-document",
-            null,
+            document,
         );
 
         return {
