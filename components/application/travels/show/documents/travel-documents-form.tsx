@@ -44,7 +44,7 @@ const TravelDocumentsForm = ({ travelId }: { travelId: string }) => {
     }
 
     return (
-        <Card>
+        <Card className="h-fit">
             <CardHeader>
                 <CardTitle>Ajouter un document</CardTitle>
             </CardHeader>

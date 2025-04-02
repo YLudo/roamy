@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { pusherClient } from "@/lib/pusher";
 import TravelDocumentsList from "./travel-documents-list";
 import TravelDocumentsFilters from "./travel-documents-filters";
+import PaginationLayout from "@/components/application/pagination-layout";
 
 const TravelDocumentsLayout = ({ travel }: { travel: ITravel }) => {
     const [documents, setDocuments] = useState<IDocument[]>([]);
@@ -14,11 +15,15 @@ const TravelDocumentsLayout = ({ travel }: { travel: ITravel }) => {
         title: "",
     });
 
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(0);
+    const itemsPerPage = 1;
+
     const fetchDocuments = useCallback(() => {
         const { title } = filters;
 
         startTransition(async () => {
-            const result = await getDocuments(travel.id, title);
+            const result = await getDocuments(travel.id, title, currentPage, itemsPerPage);
 
             if (result.error) {
                 toast({
@@ -27,10 +32,11 @@ const TravelDocumentsLayout = ({ travel }: { travel: ITravel }) => {
                     description: result.error,
                 });
             } else if (result.data) {
-                setDocuments(result.data);
+                setDocuments(result.data.documents);
+                setTotalPages(result.data.totalPages);
             }
         })
-    }, [filters, travel.id]);
+    }, [filters, travel.id, currentPage]);
 
     useEffect(() => {
         fetchDocuments();
@@ -65,6 +71,11 @@ const TravelDocumentsLayout = ({ travel }: { travel: ITravel }) => {
             <div className="lg:col-span-2">
                 <TravelDocumentsFilters filters={filters} setFilters={setFilters} />
                 <TravelDocumentsList isLoading={isPending} documents={documents} />
+                <PaginationLayout
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                />
             </div>
         </div>
     )
