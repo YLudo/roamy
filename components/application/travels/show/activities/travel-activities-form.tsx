@@ -51,7 +51,7 @@ const TravelActivitiesForm = ({ travelId }: { travelId: string }) => {
     }
 
     return (
-        <Card>
+        <Card className="h-fit">
             <CardHeader>
                 <CardTitle>Ajouter une activité</CardTitle>
             </CardHeader>
