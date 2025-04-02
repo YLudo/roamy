@@ -288,7 +288,7 @@ export const updateExpense = async (travelId: string, expenseId: string, values:
         await pusherServer.trigger(
             `travel-${travelId}`,
             "travel:update-expense",
-            updatedExpense,
+            { expense, updatedExpense },
         );
 
         return {
@@ -359,7 +359,7 @@ export const deleteExpense = async (travelId: string, expenseId: string) => {
         await pusherServer.trigger(
             `travel-${travel.id}`,
             "travel:delete-expense",
-            null
+            expense
         );
 
         return {

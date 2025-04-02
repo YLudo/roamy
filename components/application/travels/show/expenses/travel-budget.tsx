@@ -33,14 +33,14 @@ const TravelBudget = ({ travelId }: { travelId: string }) => {
         const channelName = `travel-${travelId}`;
         const channel = pusherClient.subscribe(channelName);
         
-        channel.bind("travel:new-expense", () => fetchTotalExpenses());
-        channel.bind("travel:delete-expense", () => fetchTotalExpenses());
-        channel.bind("travel:update-expense", () => fetchTotalExpenses());
+        channel.bind("travel:new-expense", (newExpense: IExpense) => setTotalExpenses((prev) => prev + newExpense.amount));
+        channel.bind("travel:delete-expense", (expense: IExpense) => setTotalExpenses((prev) => prev - expense.amount));
+        channel.bind("travel:update-expense", (data: { expense: IExpense, updatedExpense: IExpense }) => {
+            setTotalExpenses((prev) => prev - data.expense.amount + data.updatedExpense.amount);
+        });
         
         return () => {
-            pusherClient.unbind("travel:update-expense");
-            pusherClient.unbind("travel:delete-expense");
-            pusherClient.unbind("travel:new-expense");
+            pusherClient.unbind_all();
             pusherClient.unsubscribe(channelName);
         }
     }, [fetchTotalExpenses, travelId]);
