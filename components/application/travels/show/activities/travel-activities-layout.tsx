@@ -47,8 +47,18 @@ const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
         const channel = pusherClient.subscribe(channelName);
 
         channel.bind("travel:new-acitvity", () => fetchActivities());
-        channel.bind("travel:update-activity", () => fetchActivities());
-        channel.bind("travel:delete-activity", () => fetchActivities());
+        channel.bind("travel:update-activity", (data: { activity: IActivity, updatedActivity: IActivity }) => {
+            setActivities((prev) => prev.map(activity => 
+                activity.id === data.updatedActivity.id ? {
+                    ...data.updatedActivity,
+                    date: data.updatedActivity.date ? new Date(data.updatedActivity.date).toISOString() : null,
+                } : activity
+            ));
+        });
+
+        channel.bind("travel:delete-activity", (activity: IActivity) => {
+            setActivities((prev) => prev.filter((a) => a.id !== activity.id));
+        });
 
         return () => {
             pusherClient.unbind("travel:new-acitvity");
