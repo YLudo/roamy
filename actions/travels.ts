@@ -6,7 +6,13 @@ import { pusherServer } from "@/lib/pusher";
 import { TravelSchema } from "@/schemas";
 import { getServerSession } from "next-auth";
 
-export const getTravels = async (title: string, status: string, order: "asc" | "desc") => {
+export const getTravels = async (
+    title: string, 
+    status: string, 
+    order: "asc" | "desc",
+    page: number,
+    itemsPerPage: number
+) => {
     try {
         const session = await getServerSession(authOptions);
 
@@ -40,6 +46,8 @@ export const getTravels = async (title: string, status: string, order: "asc" | "
                 break;
         }
 
+        const skip = (page - 1) * itemsPerPage;
+
         const travels = await prisma.travel.findMany({
             where: {
                 OR: [
@@ -52,11 +60,27 @@ export const getTravels = async (title: string, status: string, order: "asc" | "
             orderBy: {
                 startDate: order,
             },
+            skip,
+            take: itemsPerPage,
             include: { participants: { include: { user: true } } },
         });
 
+        const totalCount = await prisma.travel.count({
+            where: {
+              OR: [
+                { userId: session.user.id },
+                { participants: { some: { userId: session.user.id } } },
+              ],
+              title: { contains: title, mode: "insensitive" },
+              ...dateFilter,
+            },
+        });
+
         return {
-            data: travels
+            data: {
+                travels,
+                totalPages: Math.ceil(totalCount / itemsPerPage),
+            }
         };
     } catch (error) {
         return {

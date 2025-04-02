@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import TravelsFilters from "./travels-filters";
 import { useSession } from "next-auth/react";
 import { pusherClient } from "@/lib/pusher";
+import PaginationLayout from "../../pagination-layout";
 
 const TravelsLayout = () => {
     const [travels, setTravels] = useState<ITravel[]>([]);
@@ -20,11 +21,15 @@ const TravelsLayout = () => {
         order: "asc",
     });
 
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(0);
+    const itemsPerPage = 6;
+
     const fetchTravels = useCallback(() => {
         const { title, status, order } = filters;
 
         startTransition(async () => {
-            const result = await getTravels(title, status, order);
+            const result = await getTravels(title, status, order, currentPage, itemsPerPage);
             
             if (result.error) {
                 toast({
@@ -33,10 +38,11 @@ const TravelsLayout = () => {
                     description: result.error,
                 });
             } else if (result.data) {
-                setTravels(result.data);
+                setTravels(result.data.travels);
+                setTotalPages(result.data.totalPages);
             }
         })
-    }, [filters]);
+    }, [filters, currentPage]);
 
     useEffect(() => {
         fetchTravels();
@@ -67,6 +73,11 @@ const TravelsLayout = () => {
             <TravelsHeader />
             <TravelsFilters filters={filters} setFilters={setFilters} />
             <TravelsList isLoading={isPending} travels={travels} />
+            <PaginationLayout
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => setCurrentPage(page)}
+            />
         </section>
     );
 }
