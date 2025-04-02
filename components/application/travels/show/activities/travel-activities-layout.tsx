@@ -6,6 +6,7 @@ import TravelActivitiesList from "./travel-activities-list";
 import { pusherClient } from "@/lib/pusher";
 import TravelActivitiesFilters from "./travel-activities-filters";
 import TravelActivitiesMap from "./travel-activities-map";
+import PaginationLayout from "@/components/application/pagination-layout";
 
 const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
     const [activities, setActivities] = useState<IActivity[]>([]);
@@ -17,11 +18,15 @@ const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
         view: "list",
     });
 
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(0);
+    const itemsPerPage = 6;
+
     const fetchActivities = useCallback(() => {
         const { title, date } = filters;
 
         startTransition(async () => {
-            const result = await getActivities(travel.id, title, date);
+            const result = await getActivities(travel.id, title, date, currentPage, itemsPerPage);
 
             if (result.error) {
                 toast({
@@ -30,13 +35,14 @@ const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
                     description: result.error,
                 });
             } else if (result.data) {
-                setActivities(result.data.map(activity => ({
+                setActivities(result.data.activities.map(activity => ({
                     ...activity,
                     date: activity.date ? new Date(activity.date).toISOString() : null
                 })));
+                setTotalPages(result.data.totalPages)
             }
         })
-    }, [filters, travel.id]);
+    }, [filters, travel.id, currentPage]);
 
     useEffect(() => {
         fetchActivities();
@@ -74,7 +80,14 @@ const TravelActivitiesLayout = ({ travel }: { travel: ITravel }) => {
             <div className="lg:col-span-2">
                 <TravelActivitiesFilters filters={filters} setFilters={setFilters} />
                 {filters.view === "list" ? (
-                    <TravelActivitiesList isLoading={isPending} activities={activities} />
+                    <>
+                        <TravelActivitiesList isLoading={isPending} activities={activities} />
+                        <PaginationLayout
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={(page) => setCurrentPage(page)} 
+                        />
+                    </>
                 ) : (
                     <TravelActivitiesMap isLoading={isPending} activities={activities} />
                 )}

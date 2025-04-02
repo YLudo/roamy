@@ -86,6 +86,8 @@ export const getActivities = async (
     travelId: string,
     titleFilter: string,
     dateFilter: "asc" | "desc",
+    page: number,
+    itemsPerPage: number
 ) => {
     try {
         const session = await getServerSession(authOptions);
@@ -131,15 +133,26 @@ export const getActivities = async (
             title: { contains: titleFilter, mode: "insensitive" },
         };
 
+        const skip = (page - 1) * itemsPerPage;
+
         const activities = await prisma.activity.findMany({
             where: whereClause,
             orderBy: {
                 date: dateFilter,
-            }
+            },
+            skip,
+            take: itemsPerPage
         });
 
+        const totalCount = await prisma.activity.count({
+            where: whereClause,
+        })
+
         return {
-            data: activities,
+            data: {
+                activities,
+                totalPages: Math.ceil(totalCount / itemsPerPage),
+            }
         };
     } catch (error) {
         return {

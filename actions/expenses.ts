@@ -147,7 +147,9 @@ export const getExpenses = async (
     travelId: string,
     titleFilter: string,
     categoryFilter: ExpenseFilters["category"],
-    dateFilter: "asc" | "desc"
+    dateFilter: "asc" | "desc",
+    page: number,
+    itemsPerPage: number,
 ) => {
     try {
         const session = await getServerSession(authOptions);
@@ -197,15 +199,26 @@ export const getExpenses = async (
             whereClause.category = categoryFilter;
         }
 
+        const skip = (page - 1) * itemsPerPage;
+
         const expenses = await prisma.expense.findMany({
             where: whereClause,
             orderBy: {
                 date: dateFilter,
-            }
+            },
+            skip,
+            take: itemsPerPage,
+        });
+
+        const totalCount = await prisma.expense.count({
+            where: whereClause,
         });
 
         return {
-            data: expenses,
+            data: {
+                expenses,
+                totalPages: Math.ceil(totalCount / itemsPerPage)
+            }
         };
     } catch (error) {
         return {

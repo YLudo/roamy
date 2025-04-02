@@ -84,6 +84,8 @@ export const addDocument = async (travelId: string, values: any) => {
 export const getDocuments = async (
     travelId: string,
     titleFilter: string,
+    page: number,
+    itemsPerPage: number,
 ) => {
     try {
         const session = await getServerSession(authOptions);
@@ -129,12 +131,23 @@ export const getDocuments = async (
             title: { contains: titleFilter, mode: "insensitive" },
         };
 
+        const skip = (page - 1) * itemsPerPage;
+
         const documents = await prisma.document.findMany({
-            where: whereClause
+            where: whereClause,
+            skip,
+            take: itemsPerPage,
+        });
+
+        const totalCount = await prisma.document.count({
+            where: whereClause,
         });
 
         return {
-            data: documents,
+            data: {
+                documents,
+                totalPages: Math.ceil(totalCount / itemsPerPage)
+            }
         };
     } catch (error) {
         return {
