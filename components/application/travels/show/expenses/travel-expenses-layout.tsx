@@ -6,6 +6,7 @@ import TravelExpensesList from "./travel-expenses-list";
 import { getExpenses } from "@/actions/expenses";
 import { toast } from "@/hooks/use-toast";
 import { pusherClient } from "@/lib/pusher";
+import PaginationLayout from "@/components/application/pagination-layout";
 
 const TravelExpensesLayout = ({ travel }: { travel: ITravel }) => {
     const [expenses, setExpenses] = useState<IExpense[]>([]);
@@ -16,12 +17,16 @@ const TravelExpensesLayout = ({ travel }: { travel: ITravel }) => {
         category: "ALL",
         date: "asc",
     });
+
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(0);
+    const itemsPerPage = 1;
     
     const fetchExpenses = useCallback(() => {
         const { title, category, date } = filters;
 
         startTransition(async () => {
-            const result = await getExpenses(travel.id, title, category, date);
+            const result = await getExpenses(travel.id, title, category, date, currentPage, itemsPerPage);
             
             if (result.error) {
                 toast({
@@ -30,13 +35,14 @@ const TravelExpensesLayout = ({ travel }: { travel: ITravel }) => {
                     description: result.error,
                 });
             } else if (result.data) {
-                setExpenses(result.data.map(expense => ({
+                setExpenses(result.data.expenses.map(expense => ({
                     ...expense,
                     date: expense.date ? new Date(expense.date).toISOString() : null
                 })));
+                setTotalPages(result.data.totalPages);
             }
         })
-    }, [filters, travel.id]);
+    }, [filters, travel.id, currentPage]);
 
     useEffect(() => {
         fetchExpenses();
@@ -77,6 +83,11 @@ const TravelExpensesLayout = ({ travel }: { travel: ITravel }) => {
             <div className="lg:col-span-2">
                 <TravelExpensesFilters filters={filters} setFilters={setFilters} />
                 <TravelExpensesList isLoading={isPending} expenses={expenses} />
+                <PaginationLayout
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                />
             </div>
         </div>
     );
