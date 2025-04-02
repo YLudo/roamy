@@ -44,8 +44,11 @@ const TravelShowParticipants = ({ travelId }: { travelId: string }) => {
         const channelName = `travel-${travelId}`;
         const channel = pusherClient.subscribe(channelName);
     
-        channel.bind("travel:new-participant", (participant: { id: string, name: string }) => {
-            setParticipants((prev) => prev.find((p) => p.id === participant.id) ? prev : [...prev, participant]);
+        channel.bind("travel:new-participant", (participant: IParticipant) => {
+            setParticipants((prev) => [...prev, {
+                id: participant.userId,
+                name: participant.user.name,
+            }]);
         });
 
         channel.bind("travel:delete-participant", (participantId: string) => {
