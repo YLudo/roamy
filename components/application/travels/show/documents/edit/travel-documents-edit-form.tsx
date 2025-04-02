@@ -46,6 +46,7 @@ const TravelDocumentsEditForm = ({
                     description: "Votre document a été modifié avec succès.",
                 });
                 form.reset();
+                setIsEditModalOpen(false);
             }
         })
     }

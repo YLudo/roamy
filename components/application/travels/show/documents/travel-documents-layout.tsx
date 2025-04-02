@@ -41,8 +41,15 @@ const TravelDocumentsLayout = ({ travel }: { travel: ITravel }) => {
         const channel = pusherClient.subscribe(channelName);
 
         channel.bind("travel:new-document", () => fetchDocuments());
-        channel.bind("travel:update-document", () => fetchDocuments());
-        channel.bind("travel:delete-document", () => fetchDocuments());
+        channel.bind("travel:update-document", (data: { document: IDocument, updatedDocument: IDocument }) => {
+            setDocuments((prev) => prev.map(document =>
+                document.id === data.updatedDocument.id ? data.updatedDocument : document
+            ));
+        });
+
+        channel.bind("travel:delete-document", (document: IDocument) => {
+            setDocuments((prev) => prev.filter((d) => d.id !== document.id));
+        });
 
         return () => {
             pusherClient.unbind("travel:new-document");
