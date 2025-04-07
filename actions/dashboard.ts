@@ -17,6 +17,9 @@ export const getNextTravel = async () => {
         const travels = await prisma.travel.findMany({
             where: { userId: session.user.id },
             orderBy: { startDate: "asc" },
+            include: {
+                participants: true,
+            }
         });
 
         if (travels.length === 0) {

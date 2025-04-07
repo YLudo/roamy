@@ -150,7 +150,7 @@ model PollOption {
   pollId    String
   poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  updated   DateTime @updatedAt
+  updatedAt   DateTime @updatedAt
 }
 
 model Vote {
