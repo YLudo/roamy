@@ -8,6 +8,7 @@ import TravelShowHeader from "./travel-show-header";
 import TravelShowContent from "./travel-show-content";
 import { pusherClient } from "@/lib/pusher";
 import TravelShowSkeleton from "./travel-show-skeleton";
+import TravelShowChat from "./travel-show-chat";
 
 const TravelShowLayout = ({ travelId }: { travelId: string }) => {
     const [travel, setTravel] = useState<ITravel>({} as ITravel);
@@ -75,6 +76,7 @@ const TravelShowLayout = ({ travelId }: { travelId: string }) => {
         <section className="mt-4">
             <TravelShowHeader travel={travel} />
             <TravelShowContent travel={travel} fetchTravel={fetchTravel} />
+            <TravelShowChat travelId={travel.id} />
         </section>
     );
 }

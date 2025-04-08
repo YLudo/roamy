@@ -70,6 +70,7 @@ model Travel {
   documents    Document[]
   polls        Poll[]
   invitations  Invitation[]
+  messages     Message[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 }
@@ -150,7 +151,7 @@ model PollOption {
   pollId    String
   poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 }
 
 model Vote {
@@ -231,4 +232,14 @@ enum InvitationStatus {
   ACCEPTED
   DECLINED
   EXPIRED
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  text      String
+  username  String
+  travelId  String
+  travel    Travel   @relation(fields: [travelId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

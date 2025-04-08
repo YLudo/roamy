@@ -175,3 +175,13 @@ declare interface IInvitation {
     createdAt: Date;
     updatedAt: Date;
 }
+
+declare interface IMessage {
+    id: string;
+    text: string;
+    username: string;
+    travelId: string;
+    travel?: ITravel;
+    createdAt: Date;
+    updatedAt: Date;
+}
